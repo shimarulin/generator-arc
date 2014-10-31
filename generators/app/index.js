@@ -6,7 +6,7 @@ var yosay = require('yosay');
 
 var ArcGenerator = yeoman.generators.Base.extend({
   initializing: function () {
-    this.pkg = require('../package.json');
+    this.pkg = require('../../package.json');
   },
 
   prompting: function () {
@@ -33,8 +33,9 @@ var ArcGenerator = yeoman.generators.Base.extend({
 
   writing: {
     app: function () {
-      this.dest.mkdir('app');
-      this.dest.mkdir('app/templates');
+        this.dest.mkdir('src/components');
+        this.dest.mkdir('src/modules');
+//      this.dest.mkdir('app/templates');
 
       this.src.copy('_package.json', 'package.json');
       this.src.copy('_bower.json', 'bower.json');

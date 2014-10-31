@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "Yeoman generator",
   "license": "MIT",
-  "main": "app/index.js",
+  "main": "generators/app/index.js",
   "repository": "https://github.com/shimarulin/generator-arc.git",
   "author": {
     "name": "",
