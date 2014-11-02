@@ -5,51 +5,114 @@ var yeoman = require('yeoman-generator');
 var yosay = require('yosay');
 
 var ArcGenerator = yeoman.generators.Base.extend({
-  initializing: function () {
-    this.pkg = require('../../package.json');
-  },
+    constructor: function () {
+        // Calling the super constructor is important so our generator is correctly setup
+        yeoman.generators.Base.apply(this, arguments);
 
-  prompting: function () {
-    var done = this.async();
+        this.argument('projectname', {
+            desc: 'You application name',
+            type: String,
+            defaults: function () {
+                return path.basename(process.cwd());
+            }(),
+            required: false
+        });
 
-    // Have Yeoman greet the user.
-    this.log(yosay(
-      'Welcome to the awesome Arc generator!'
-    ));
+        // This method adds support for a `--less` flag
+        // Usage: this.options.less
+//        this.option('less', {
+//            desc: 'Less support',
+//            type: String,
+//            defaults: undefined,
+//            hide: false
+//        });
 
-    var prompts = [{
-      type: 'confirm',
-      name: 'someOption',
-      message: 'Would you like to enable this option?',
-      default: true
-    }];
-
-    this.prompt(prompts, function (props) {
-      this.someOption = props.someOption;
-
-      done();
-    }.bind(this));
-  },
-
-  writing: {
-    app: function () {
-        this.dest.mkdir('src/components');
-        this.dest.mkdir('src/modules');
-//      this.dest.mkdir('app/templates');
-
-      this.src.copy('_package.json', 'package.json');
-      this.src.copy('_bower.json', 'bower.json');
     },
 
-    projectfiles: function () {
-      this.src.copy('editorconfig', '.editorconfig');
-      this.src.copy('jshintrc', '.jshintrc');
-    }
-  },
+    initializing: function () {
+        this.pkg = require('../../package.json');
+        this.projectname = this._.slugify(this._.humanize(this.projectname));
+        this.readable_name = this._.humanize(this.projectname);
+    },
 
-  end: function () {
-    this.installDependencies();
-  }
+    prompting: function () {
+        var done = this.async();
+
+        // Have Yeoman greet the user.
+        this.log(yosay(
+            'Welcome to the awesome Arc generator!'
+        ));
+
+        var prompts = [
+            {
+                type: 'list',
+                name: 'preprocessor',
+                message: 'Select CSS pre-processor',
+                choices: [
+                    {
+                        name: 'Less',
+                        value: 'less'
+                    },
+                    {
+                        name: 'Sass',
+                        value: 'sass'
+                    }
+                ],
+                default: 0
+            }
+        ];
+
+        this.prompt(prompts, function (props) {
+            this.properties = props;
+            done();
+        }.bind(this));
+    },
+
+    configuring: function () {
+//        this.log(this);
+//        this.log(this.options);
+//        this.log(this.arguments);
+//        this.log('projectname -> ' + this.projectname);
+    },
+
+    writing: {
+        app: function () {
+
+            this.mkdir('src/components');
+            this.mkdir('src/modules');
+
+            this.template('src/_app.html', 'src/app.html');
+
+        },
+
+        tasks: function () {
+            this.mkdir('tasks/config/modules');
+        },
+
+        bower: function () {
+            this.copy('bowerrc', '.bowerrc');
+        },
+
+        projectfiles: function () {
+            this.copy('_package.json', 'package.json');
+            this.copy('_bower.json', 'bower.json');
+
+            this.copy('editorconfig', '.editorconfig');
+            this.copy('gitattributes', '.gitattributes');
+            this.copy('gitignore', '.gitignore');
+
+            this.src.copy('jshintrc', '.jshintrc');
+
+//            this.src.copy('npmrc', '.npmrc');
+//            this.src.copy('gitignore', '.gitignore');
+//            this.src.copy('gitignore', '.gitignore');
+
+        }
+    },
+
+    end: function () {
+        this.installDependencies();
+    }
 });
 
 module.exports = ArcGenerator;

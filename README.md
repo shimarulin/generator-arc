@@ -3,6 +3,12 @@
 > [Yeoman](http://yeoman.io) generator
 
 
+## Resources
+
+ - [Inquirer.js](https://github.com/SBoudrias/Inquirer.js);
+ - [Lo-Dash](https://lodash.com/);
+ - [Underscore.string](https://github.com/epeli/underscore.string);
+
 ## Getting Started
 
 ### What is Yeoman?
