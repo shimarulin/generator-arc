@@ -9,7 +9,7 @@ var ArcGenerator = yeoman.generators.Base.extend({
         // Calling the super constructor is important so our generator is correctly setup
         yeoman.generators.Base.apply(this, arguments);
 
-        this.argument('projectname', {
+        this.argument('projectName', {
             desc: 'You application name',
             type: String,
             defaults: function () {
@@ -30,9 +30,11 @@ var ArcGenerator = yeoman.generators.Base.extend({
     },
 
     initializing: function () {
+        this.log(this);
         this.pkg = require('../../package.json');
-        this.projectname = this._.slugify(this._.humanize(this.projectname));
-        this.readable_name = this._.humanize(this.projectname);
+        this.bowerrc = this.src.readJSON('bowerrc');
+        this.projectName = this._.slugify(this._.humanize(this.projectName));
+        this.readableName = this._.capitalize(this._.humanize(this.projectName));
     },
 
     prompting: function () {
@@ -72,7 +74,7 @@ var ArcGenerator = yeoman.generators.Base.extend({
 //        this.log(this);
 //        this.log(this.options);
 //        this.log(this.arguments);
-//        this.log('projectname -> ' + this.projectname);
+//        this.log('projectName -> ' + this.projectName);
     },
 
     writing: {
@@ -94,12 +96,13 @@ var ArcGenerator = yeoman.generators.Base.extend({
         },
 
         projectfiles: function () {
-            this.copy('_package.json', 'package.json');
-            this.copy('_bower.json', 'bower.json');
+            this.template('_package.json', 'package.json');
+            this.template('_bower.json', 'bower.json');
+
+            this.template('_gitignore', '.gitignore');
 
             this.copy('editorconfig', '.editorconfig');
             this.copy('gitattributes', '.gitattributes');
-            this.copy('gitignore', '.gitignore');
 
             this.src.copy('jshintrc', '.jshintrc');
 
