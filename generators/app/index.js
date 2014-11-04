@@ -76,6 +76,11 @@ var ArcGenerator = yeoman.generators.Base.extend({
                     }
                 ],
                 default: 0
+            },
+            {
+                type: 'input',
+                name: 'repository',
+                message: 'Enter the repository url'
             }
         ];
 
@@ -95,12 +100,10 @@ var ArcGenerator = yeoman.generators.Base.extend({
 
     writing: {
         app: function () {
-
             this.mkdir('src/components');
             this.mkdir('src/modules');
 
             this.template('src/_app.html', 'src/app.html');
-
         },
 
         bower: function () {
@@ -120,15 +123,8 @@ var ArcGenerator = yeoman.generators.Base.extend({
         projectfiles: function () {
             this.template('_package.json', 'package.json');
 
-
             this.copy('editorconfig', '.editorconfig');
-
             this.copy('jshintrc', '.jshintrc');
-
-//            this.src.copy('npmrc', '.npmrc');
-//            this.src.copy('gitignore', '.gitignore');
-//            this.src.copy('gitignore', '.gitignore');
-
         }
     },
 

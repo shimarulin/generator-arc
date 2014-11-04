@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "<%= properties.repository %>"
   },
   "bugs": {
     "url" : "http://",
