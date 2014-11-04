@@ -1,8 +1,9 @@
 'use strict';
-var util = require('util');
-var path = require('path');
-var yeoman = require('yeoman-generator');
-var yosay = require('yosay');
+var util = require('util'),
+    path = require('path'),
+    exec = require('child_process').exec,
+    yeoman = require('yeoman-generator'),
+    yosay = require('yosay');
 
 var ArcGenerator = yeoman.generators.Base.extend({
     constructor: function () {
@@ -30,11 +31,25 @@ var ArcGenerator = yeoman.generators.Base.extend({
     },
 
     initializing: function () {
-        this.log(this);
         this.pkg = require('../../package.json');
         this.bowerrc = this.src.readJSON('bowerrc');
         this.projectName = this._.slugify(this._.humanize(this.projectName));
         this.readableName = this._.capitalize(this._.humanize(this.projectName));
+
+        exec('git config user.name',
+            function (error, stdout, stderr) {
+                this.userName = this._.trim(stdout);
+                if (error !== null) {
+                    console.log('exec error: ' + error);
+                }
+            }.bind(this));
+        exec('git config user.email',
+            function (error, stdout, stderr) {
+                this.userEmail = this._.trim(stdout);
+                if (error !== null) {
+                    console.log('exec error: ' + error);
+                }
+            }.bind(this));
     },
 
     prompting: function () {
@@ -74,7 +89,8 @@ var ArcGenerator = yeoman.generators.Base.extend({
 //        this.log(this);
 //        this.log(this.options);
 //        this.log(this.arguments);
-//        this.log('projectName -> ' + this.projectName);
+        this.log('userName -> ' + this.userName);
+        this.log('userEmail -> ' + this.userEmail);
     },
 
     writing: {
@@ -87,24 +103,27 @@ var ArcGenerator = yeoman.generators.Base.extend({
 
         },
 
+        bower: function () {
+            this.copy('bowerrc', '.bowerrc');
+            this.template('_bower.json', 'bower.json');
+        },
+
+        git: function () {
+            this.copy('gitattributes', '.gitattributes');
+            this.template('_gitignore', '.gitignore');
+        },
+
         tasks: function () {
             this.mkdir('tasks/config/modules');
         },
 
-        bower: function () {
-            this.copy('bowerrc', '.bowerrc');
-        },
-
         projectfiles: function () {
             this.template('_package.json', 'package.json');
-            this.template('_bower.json', 'bower.json');
 
-            this.template('_gitignore', '.gitignore');
 
             this.copy('editorconfig', '.editorconfig');
-            this.copy('gitattributes', '.gitattributes');
 
-            this.src.copy('jshintrc', '.jshintrc');
+            this.copy('jshintrc', '.jshintrc');
 
 //            this.src.copy('npmrc', '.npmrc');
 //            this.src.copy('gitignore', '.gitignore');

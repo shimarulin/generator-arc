@@ -1,6 +1,27 @@
 {
   "name": "<%= projectName %>",
   "version": "0.0.0",
-  "dependencies": {}
+  "description": "<%= readableName %>",
+  "homepage": "",
+  "keywords": [],
+  "license": "MIT",
+  "private": true,
+  "authors": [
+    {
+      "name" : "<%= userName %>",
+      "email" : "<%= userEmail %>",
+      "url" : "http://"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "main": [],
+  "ignore": [
+    "node_modules"
+  ],
+  "dependencies": {},
+  "overrides": {}
 }
 
