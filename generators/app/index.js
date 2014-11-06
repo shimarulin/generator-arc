@@ -1,9 +1,22 @@
 'use strict';
 var util = require('util'),
     path = require('path'),
-    exec = require('child_process').exec,
+//    exec = require('child_process').exec,
     yeoman = require('yeoman-generator'),
-    yosay = require('yosay');
+    yosay = require('yosay'),
+    colors = require('colors'),
+    logger = require('tracer').colorConsole({
+        filters : {
+            log : colors.white,
+            trace : colors.magenta,
+            debug : colors.cyan,
+            info : colors.green,
+            warn : colors.yellow,
+            error : [ colors.red, colors.bold ]
+        }
+    }),
+    githubUsername = require('github-username')
+    ;
 
 var ArcGenerator = yeoman.generators.Base.extend({
     constructor: function () {
@@ -19,37 +32,39 @@ var ArcGenerator = yeoman.generators.Base.extend({
             required: false
         });
 
-        // This method adds support for a `--less` flag
-        // Usage: this.options.less
-//        this.option('less', {
-//            desc: 'Less support',
-//            type: String,
-//            defaults: undefined,
-//            hide: false
-//        });
+        this.option('github', {
+            desc: 'Use you github account for configuring repository url',
+            type: Boolean,
+            defaults: false
+        });
 
     },
 
     initializing: function () {
+        var done = this.async();
         this.pkg = require('../../package.json');
         this.bowerrc = this.src.readJSON('bowerrc');
         this.projectName = this._.slugify(this._.humanize(this.projectName));
         this.readableName = this._.capitalize(this._.humanize(this.projectName));
+        this.username = this.user.git.name();
+        this.useremail = this.user.git.email();
 
-        exec('git config user.name',
-            function (error, stdout, stderr) {
-                this.userName = this._.trim(stdout);
-                if (error !== null) {
-                    console.log('exec error: ' + error);
+        if (this.options.github == true) {
+            githubUsername(this.useremail, function (err, username) {
+                if (err === null) {
+                    this.user.github.name = username;
                 }
-            }.bind(this));
-        exec('git config user.email',
-            function (error, stdout, stderr) {
-                this.userEmail = this._.trim(stdout);
-                if (error !== null) {
-                    console.log('exec error: ' + error);
+                else {
+                    this.log(colors.red.bold(err));
+                    this.user.github.name = 'username';
                 }
+                done();
             }.bind(this));
+        }
+        else {
+            done();
+        }
+
     },
 
     prompting: function () {
@@ -76,11 +91,6 @@ var ArcGenerator = yeoman.generators.Base.extend({
                     }
                 ],
                 default: 0
-            },
-            {
-                type: 'input',
-                name: 'repository',
-                message: 'Enter the repository url'
             }
         ];
 
@@ -91,11 +101,21 @@ var ArcGenerator = yeoman.generators.Base.extend({
     },
 
     configuring: function () {
-//        this.log(this);
-//        this.log(this.options);
-//        this.log(this.arguments);
-        this.log('userName -> ' + this.userName);
-        this.log('userEmail -> ' + this.userEmail);
+        this.url = {};
+        if (this.options.github) {
+            this.url.repo = 'https://github.com/' + this.user.github.name + '/' + this.projectName + '.git';
+            this.url.bugs = 'https://github.com/' + this.user.github.name + '/' + this.projectName + '/issues';
+            this.url.home = 'http://github.com/' + this.user.github.name;
+        }
+        else {
+            this.url.repo = 'https://example.com/' + this.projectName + '.git';
+            this.url.bugs = 'https://example.com/' + this.projectName + '/issues';
+            this.url.home = 'http://example.com/' + this.projectName;
+        }
+        this.log(
+//            logger.log(this.options),
+            logger.info(this.url)
+        );
     },
 
     writing: {

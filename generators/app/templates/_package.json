@@ -7,17 +7,17 @@
   "license": "MIT",
   "private": true,
   "author": {
-    "name" : "<%= userName %>",
-    "email" : "<%= userEmail %>",
-    "url" : "http://"
+    "name" : "<%= username %>",
+    "email" : "<%= useremail %>",
+    "url" : "<%= url.home %>"
   },
   "repository": {
     "type": "git",
-    "url": "<%= properties.repository %>"
+    "url": "<%= url.repo %>"
   },
   "bugs": {
-    "url" : "http://",
-    "email" : "<%= userEmail %>"
+    "url" : "<%= url.bugs %>",
+    "email" : "<%= useremail %>"
   },
   "devDependencies": {
     "chalk": "*",

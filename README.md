@@ -47,6 +47,20 @@ Yeoman has a heart of gold. He's a person with feelings and opinions, but he's v
 
 If you'd like to get to know Yeoman better and meet some of his friends, [Grunt](http://gruntjs.com) and [Bower](http://bower.io), check out the complete [Getting Started Guide](https://github.com/yeoman/yeoman/wiki/Getting-Started).
 
+## Interacton
+
+### Options
+
+    this.option('optname', {
+        desc: 'Use you github account for configuring repository url',
+        type: String,
+        defaults: 'valueDefault'
+    });
+
+Usage: 
+ - `yo generator` resolve to `this.options.optname == 'valueDefault'`
+ - `yo generator --optname` resolve to `this.options.optname == true`
+ - `yo generator --optname=value` resolve to `this.options.optname == 'value'`
 
 ## License
 

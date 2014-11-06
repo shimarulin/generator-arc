@@ -8,14 +8,14 @@
   "private": true,
   "authors": [
     {
-      "name" : "<%= userName %>",
-      "email" : "<%= userEmail %>",
-      "url" : "http://"
+      "name" : "<%= username %>",
+      "email" : "<%= useremail %>",
+      "url" : "<%= url.home %>"
     }
   ],
   "repository": {
     "type": "git",
-    "url": "<%= properties.repository %>"
+    "url": "<%= url.repo %>"
   },
   "main": [],
   "ignore": [
