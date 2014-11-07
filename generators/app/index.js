@@ -56,7 +56,7 @@ var ArcGenerator = yeoman.generators.Base.extend({
                 }
                 else {
                     this.log(colors.red.bold(err));
-                    this.user.github.name = 'username';
+                    this.user.github.name =  this._.strLeft(this.useremail, '@');
                 }
                 done();
             }.bind(this));
