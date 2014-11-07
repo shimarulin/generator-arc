@@ -1,11 +1,16 @@
 'use strict';
 var util = require('util'),
     path = require('path'),
-//    exec = require('child_process').exec,
+    https = require('https'),
+    exec = require('child_process').exec,
     yeoman = require('yeoman-generator'),
     yosay = require('yosay'),
     colors = require('colors'),
     logger = require('tracer').colorConsole({
+        inspectOpt: {
+            showHidden : true, //the object's non-enumerable properties will be shown too
+            depth : 0 //tells inspect how many times to recurse while formatting the object. This is useful for inspecting large complicated objects. Defaults to 2. To make it recurse indefinitely pass null.
+        },
         filters : {
             log : colors.white,
             trace : colors.magenta,
@@ -38,6 +43,12 @@ var ArcGenerator = yeoman.generators.Base.extend({
             defaults: false
         });
 
+        this.option('bitbucket', {
+            desc: 'Use you bitbucket account for configuring repository url',
+            type: Boolean,
+            defaults: false
+        });
+
     },
 
     initializing: function () {
@@ -58,6 +69,21 @@ var ArcGenerator = yeoman.generators.Base.extend({
                     this.log(colors.red.bold(err));
                     this.user.github.name =  this._.strLeft(this.useremail, '@');
                 }
+                done();
+            }.bind(this));
+        }
+        else if (this.options.bitbucket == true) {
+            this.log(colors.cyan.bold("https://bitbucket.org/api/1.0/users/" + this.useremail));
+            https.get("https://bitbucket.org/api/1.0/users/" + this.useremail, function(res) {
+                this.log('STATUS: ' + res.statusCode);
+                res.on("data", function(chunk) {
+//                    this.log();
+                    this.user.bitbucket = JSON.parse(chunk).user;
+                    logger.log(this.user.bitbucket);
+                    done();
+                }.bind(this));
+            }.bind(this)).on('error', function(e) {
+                this.log("Got error: " + e.message);
                 done();
             }.bind(this));
         }
@@ -101,11 +127,17 @@ var ArcGenerator = yeoman.generators.Base.extend({
     },
 
     configuring: function () {
+        logger.log(this);
         this.url = {};
         if (this.options.github) {
             this.url.repo = 'https://github.com/' + this.user.github.name + '/' + this.projectName + '.git';
             this.url.bugs = 'https://github.com/' + this.user.github.name + '/' + this.projectName + '/issues';
             this.url.home = 'http://github.com/' + this.user.github.name;
+        }
+        else if (this.options.bitbucket) {
+            this.url.repo = 'https://bitbucket.org/' + this.user.bitbucket.username + '/' + this.projectName + '.git';
+            this.url.bugs = 'https://bitbucket.org/' + this.user.bitbucket.username + '/' + this.projectName + '/issues';
+            this.url.home = 'http://bitbucket.org/' + this.user.bitbucket.username;
         }
         else {
             this.url.repo = 'https://example.com/' + this.projectName + '.git';
@@ -150,6 +182,15 @@ var ArcGenerator = yeoman.generators.Base.extend({
 
     end: function () {
         this.installDependencies();
+
+        exec('git init',
+            function (error, stdout, stderr) {
+                if (error === null) { this.log('\"git init\" susses: '.cyan + colors.green(stdout)); }
+            }.bind(this));
+        exec('git add .',
+            function (error, stdout, stderr) {
+                if (error === null) { this.log('\"git add\" susses'.cyan); }
+            }.bind(this));
     }
 });
 
