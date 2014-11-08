@@ -1,8 +1,10 @@
 'use strict';
 var util = require('util'),
     path = require('path'),
+    querystring = require('querystring'),
     https = require('https'),
     exec = require('child_process').exec,
+    async = require('async'),
     yeoman = require('yeoman-generator'),
     yosay = require('yosay'),
     colors = require('colors'),
@@ -49,10 +51,21 @@ var ArcGenerator = yeoman.generators.Base.extend({
             defaults: false
         });
 
+        this.option('create', {
+            desc: 'Create remote repository',
+            type: Boolean,
+            defaults: false
+        });
     },
 
     initializing: function () {
         var done = this.async();
+
+        // Have Yeoman greet the user.
+        this.log(yosay(
+            'Welcome to the awesome Arc generator!'
+        ));
+
         this.pkg = require('../../package.json');
         this.bowerrc = this.src.readJSON('bowerrc');
         this.projectName = this._.slugify(this._.humanize(this.projectName));
@@ -73,19 +86,17 @@ var ArcGenerator = yeoman.generators.Base.extend({
             }.bind(this));
         }
         else if (this.options.bitbucket == true) {
-            this.log(colors.cyan.bold("https://bitbucket.org/api/1.0/users/" + this.useremail));
-            https.get("https://bitbucket.org/api/1.0/users/" + this.useremail, function(res) {
-                this.log('STATUS: ' + res.statusCode);
-                res.on("data", function(chunk) {
-//                    this.log();
-                    this.user.bitbucket = JSON.parse(chunk).user;
-                    logger.log(this.user.bitbucket);
+            https
+                .get("https://bitbucket.org/api/1.0/users/" + this.useremail, function(res) {
+                    res.on("data", function(chunk) {
+                        this.user.bitbucket = JSON.parse(chunk).user;
+                        done();
+                    }.bind(this));
+                }.bind(this))
+                .on('error', function(e) {
+                    this.log("Got error: ".red.bold, colors.red(e.message));
                     done();
                 }.bind(this));
-            }.bind(this)).on('error', function(e) {
-                this.log("Got error: " + e.message);
-                done();
-            }.bind(this));
         }
         else {
             done();
@@ -94,13 +105,8 @@ var ArcGenerator = yeoman.generators.Base.extend({
     },
 
     prompting: function () {
+        var yo = this;
         var done = this.async();
-
-        // Have Yeoman greet the user.
-        this.log(yosay(
-            'Welcome to the awesome Arc generator!'
-        ));
-
         var prompts = [
             {
                 type: 'list',
@@ -117,6 +123,15 @@ var ArcGenerator = yeoman.generators.Base.extend({
                     }
                 ],
                 default: 0
+            },
+            {
+                type: 'password',
+                name: 'password',
+                message: 'Enter your ' + serviceName() + ' password',
+                default: '',
+                when: function () {
+                    return yo.options.create && (yo.options.bitbucket || yo.options.github)
+                }
             }
         ];
 
@@ -124,20 +139,33 @@ var ArcGenerator = yeoman.generators.Base.extend({
             this.properties = props;
             done();
         }.bind(this));
+
+        function serviceName () {
+            var name = '';
+            if (yo.options.github) {
+                name = 'GitHub'
+            }
+            else if (yo.options.bitbucket) {
+                name = 'BitBucket'
+            }
+            return name;
+        }
     },
 
     configuring: function () {
-        logger.log(this);
+        var done = this.async();
         this.url = {};
         if (this.options.github) {
             this.url.repo = 'https://github.com/' + this.user.github.name + '/' + this.projectName + '.git';
             this.url.bugs = 'https://github.com/' + this.user.github.name + '/' + this.projectName + '/issues';
             this.url.home = 'http://github.com/' + this.user.github.name;
+            this.repository = 'git@github.com:' + this.user.github.name + '/' + this.projectName + '.git';
         }
         else if (this.options.bitbucket) {
             this.url.repo = 'https://bitbucket.org/' + this.user.bitbucket.username + '/' + this.projectName + '.git';
             this.url.bugs = 'https://bitbucket.org/' + this.user.bitbucket.username + '/' + this.projectName + '/issues';
             this.url.home = 'http://bitbucket.org/' + this.user.bitbucket.username;
+            this.repository = 'git@bitbucket.org:' + this.user.bitbucket.username + '/' + this.projectName + '.git';
         }
         else {
             this.url.repo = 'https://example.com/' + this.projectName + '.git';
@@ -146,8 +174,47 @@ var ArcGenerator = yeoman.generators.Base.extend({
         }
         this.log(
 //            logger.log(this.options),
-            logger.info(this.url)
+//            logger.info(this)
         );
+
+        if (this.options.github && this.options.create) {
+
+        }
+        else if (this.options.bitbucket && this.options.create) {
+            var params = querystring.stringify({
+                'name' : this.projectName,
+                'is_private': true,
+                'scm': 'git'
+            });
+            var options = {
+                hostname: 'bitbucket.org',
+                path: '/api/2.0/repositories/' +  this.user.bitbucket.username + '/' + this.projectName,
+                method: 'POST',
+                auth: this.user.bitbucket.username + ':' + this.properties.password,
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Content-Length': params.length
+                }
+            };
+            var req = https.request(options, function(res) {
+                res.setEncoding('utf8');
+                res.on('data', function(chunk) {
+                    this.remote = true;
+                    done();
+                }.bind(this));
+            }.bind(this));
+            req.write(params);
+            req.end();
+
+            req.on('error', function(e) {
+                this.log("Got error: ".red.bold, colors.red(e.message));
+                done();
+            }.bind(this));
+        }
+        else {
+            done();
+        }
+
     },
 
     writing: {
@@ -181,16 +248,68 @@ var ArcGenerator = yeoman.generators.Base.extend({
     },
 
     end: function () {
+        var yo = this;
         this.installDependencies();
 
-        exec('git init',
-            function (error, stdout, stderr) {
-                if (error === null) { this.log('\"git init\" susses: '.cyan + colors.green(stdout)); }
-            }.bind(this));
-        exec('git add .',
-            function (error, stdout, stderr) {
-                if (error === null) { this.log('\"git add\" susses'.cyan); }
-            }.bind(this));
+        (function init () {
+            async.series([
+                    function(callback){
+                        exec('git init',
+                            function (error, stdout, stderr) {
+                                if (error === null) {
+                                    console.log('git init: '.green + colors.cyan(yo._.trim(stdout)));
+                                }
+                                callback(null, '\"git init\" susses');
+                            });
+                    },
+                    function(callback){
+                        exec('git add .',
+                            function (error, stdout, stderr) {
+                                if (error === null) {
+                                    console.log('git add:'.green, "susses".cyan);
+                                }
+                                callback(null, '\"git add\" susses');
+                            });
+                    },
+                    function(callback){
+                        exec('git commit -m \"Initial commit\"',
+                            function (error, stdout, stderr) {
+                                if (error === null) {
+                                    console.log('git commit:'.green, yo._.trim(stdout));
+                                }
+                                callback(null, '\"git commit\" susses');
+                            });
+                    }
+                ],
+                function(err, results){
+//                    logger.info(results);
+                    if (yo.repository) {
+                        addRemote(yo.repository);
+                    }
+                }
+            );
+        }());
+
+        function addRemote (repo) {
+            exec('git remote add origin ' + repo,
+                function (error, stdout, stderr) {
+                    if (error === null && yo.remote) {
+                        console.log('git remote add:'.green, "susses".cyan);
+                        push();
+                    }
+                    else if (error === null) {
+                        console.log('git remote add:'.green, "susses".cyan);
+                    }
+                });
+        }
+        function push () {
+            exec('git push --set-upstream origin master',
+                function (error, stdout, stderr) {
+                    if (error === null) {
+                        console.log('git push:'.green, yo._.trim(stdout));
+                    }
+                });
+        }
     }
 });
 
