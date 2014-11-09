@@ -11,7 +11,7 @@ var util = require('util'),
     logger = require('tracer').colorConsole({
         inspectOpt: {
             showHidden : true, //the object's non-enumerable properties will be shown too
-            depth : 0 //tells inspect how many times to recurse while formatting the object. This is useful for inspecting large complicated objects. Defaults to 2. To make it recurse indefinitely pass null.
+            depth : 1 //tells inspect how many times to recurse while formatting the object. This is useful for inspecting large complicated objects. Defaults to 2. To make it recurse indefinitely pass null.
         },
         filters : {
             log : colors.white,
@@ -177,16 +177,45 @@ var ArcGenerator = yeoman.generators.Base.extend({
 //            logger.info(this)
         );
 
+        var params, options, req;
         if (this.options.github && this.options.create) {
+            params = JSON.stringify({
+                'name': this.projectName,
+                'has_wiki': false
+            });
+            options = {
+                hostname: 'api.github.com',
+                path: '/user/repos',
+                method: 'POST',
+                auth: this.user.github.name + ':' + this.properties.password,
+                headers: {
+                    'Accept': 'application/vnd.github.v3+json',
+                    'User-Agent': 'Yeoman-Generator-Arc',
+                    'Content-type': 'application/json'
+                }
+            };
+            req = https.request(options, function(res) {
+                res.setEncoding('utf8');
+                res.on('data', function(chunk) {
+                    this.remote = true;
+                    done();
+                }.bind(this));
+            }.bind(this));
+            req.write(params);
+            req.end();
 
+            req.on('error', function(e) {
+                this.log("Got error: ".red.bold, colors.red(e.message));
+                done();
+            }.bind(this));
         }
         else if (this.options.bitbucket && this.options.create) {
-            var params = querystring.stringify({
+            params = querystring.stringify({
                 'name' : this.projectName,
                 'is_private': true,
                 'scm': 'git'
             });
-            var options = {
+            options = {
                 hostname: 'bitbucket.org',
                 path: '/api/2.0/repositories/' +  this.user.bitbucket.username + '/' + this.projectName,
                 method: 'POST',
@@ -196,7 +225,7 @@ var ArcGenerator = yeoman.generators.Base.extend({
                     'Content-Length': params.length
                 }
             };
-            var req = https.request(options, function(res) {
+            req = https.request(options, function(res) {
                 res.setEncoding('utf8');
                 res.on('data', function(chunk) {
                     this.remote = true;
@@ -251,44 +280,42 @@ var ArcGenerator = yeoman.generators.Base.extend({
         var yo = this;
         this.installDependencies();
 
-        (function init () {
-            async.series([
-                    function(callback){
-                        exec('git init',
-                            function (error, stdout, stderr) {
-                                if (error === null) {
-                                    console.log('git init: '.green + colors.cyan(yo._.trim(stdout)));
-                                }
-                                callback(null, '\"git init\" susses');
-                            });
-                    },
-                    function(callback){
-                        exec('git add .',
-                            function (error, stdout, stderr) {
-                                if (error === null) {
-                                    console.log('git add:'.green, "susses".cyan);
-                                }
-                                callback(null, '\"git add\" susses');
-                            });
-                    },
-                    function(callback){
-                        exec('git commit -m \"Initial commit\"',
-                            function (error, stdout, stderr) {
-                                if (error === null) {
-                                    console.log('git commit:'.green, yo._.trim(stdout));
-                                }
-                                callback(null, '\"git commit\" susses');
-                            });
-                    }
-                ],
-                function(err, results){
-//                    logger.info(results);
-                    if (yo.repository) {
-                        addRemote(yo.repository);
-                    }
+        async.series([
+                function(callback){
+                    exec('git init',
+                        function (error, stdout, stderr) {
+                            if (error === null) {
+                                console.log('git init: '.green + colors.cyan(yo._.trim(stdout)));
+                            }
+                            callback(null, '\"git init\" susses');
+                        });
+                },
+                function(callback){
+                    exec('git add .',
+                        function (error, stdout, stderr) {
+                            if (error === null) {
+                                console.log('git add:'.green, "susses".cyan);
+                            }
+                            callback(null, '\"git add\" susses');
+                        });
+                },
+                function(callback){
+                    exec('git commit -m \"Initial commit\"',
+                        function (error, stdout, stderr) {
+                            if (error === null) {
+                                console.log('git commit:'.green, yo._.trim(stdout));
+                            }
+                            callback(null, '\"git commit\" susses');
+                        });
                 }
-            );
-        }());
+            ],
+            function(err, results){
+//                    logger.info(results);
+                if (yo.repository) {
+                    addRemote(yo.repository);
+                }
+            }
+        );
 
         function addRemote (repo) {
             exec('git remote add origin ' + repo,
