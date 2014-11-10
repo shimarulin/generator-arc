@@ -8,18 +8,17 @@ var gulp = require('gulp')
     , dir = requireDir('./tasks')
     , config = require('./tasks/modules/config')
     , requireTask = [
-        'build.lib.dev',
-        'server',
+        'lib',
+        'html',
         'css',
-        'script'
-//        'templatecache'
+        'script',
+        'server'
     ]
     ;
 
 gulp.task('default', requireTask, function() {
     gulp.watch(config.css.watch, ['css']);
     gulp.watch('src/**/*.js', ['script']);
-//    gulp.watch('src/modules/**/*.html', ['templatecache']);
 });
 
 

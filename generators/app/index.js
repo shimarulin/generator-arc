@@ -266,10 +266,12 @@ var ArcGenerator = yeoman.generators.Base.extend({
 
         tasks: function () {
             this.mkdir('tasks/config/modules');
+            this.template('_gulpfile.js', 'gulpfile.js');
         },
 
         projectfiles: function () {
             this.template('_package.json', 'package.json');
+            this.template('_readme.md', 'README.md');
 
             this.copy('editorconfig', '.editorconfig');
             this.copy('jshintrc', '.jshintrc');
