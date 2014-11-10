@@ -1,1 +1,1 @@
-# "<%= readableName %>"
+# <%= readableName %>
