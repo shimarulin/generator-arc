@@ -1,0 +1,44 @@
+{
+    "pre": {
+        "processor": "less",
+        "options": {
+            "relativeUrls": false,
+            "rootpath": "../",
+            "strictImports": true
+        }
+    },
+    "post": {
+        "processor": "pleeease",
+        "options": {
+            "minifier": false,
+            "autoprefixer": {
+                "browsers": [
+                    "Explorer >= 9",
+                    "last 4 versions"
+                ]
+            }
+        }
+    },
+    "source": {
+        "root": "src/",
+        "config": {
+            "underscore": false,
+            "recursive": true
+        },
+        "files": {
+            "less": ["*.less"],
+            "sass": ["*.sass", "*.scss"],
+            "stylus": ["*.styl"]
+        }
+    },
+    "destination": {
+        "file": "app.css",
+        "path": "css/"
+    },
+    "build": {
+        "processor": "pleeease",
+        "options": {
+            "minifier": true
+        }
+    }
+}

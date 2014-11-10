@@ -6,19 +6,14 @@
 var gulp = require('gulp')
     , requireDir = require('require-dir')
     , dir = requireDir('./tasks')
-    , config = require('./tasks/modules/config')
-    , requireTask = [
-        'lib',
-        'html',
-        'css',
-        'script',
-        'server'
+    , config = require('./tasks/config/config')
+    , requireTasks = [
+        'lib'
     ]
     ;
 
-gulp.task('default', requireTask, function() {
+gulp.task('default', requireTasks, function() {
     gulp.watch(config.css.watch, ['css']);
-    gulp.watch('src/**/*.js', ['script']);
 });
 
 
