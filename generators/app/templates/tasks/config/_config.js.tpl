@@ -6,11 +6,40 @@ var filter = require('gulp-filter')
         source: {root: 'src/'}
     }
     , css = {
-        source: {files: {
-            less: ['*.less'],
-            sass: ['*.sass', '*.scss']
-        }},
-        pre: {processor: '<%= properties.preprocessor %>'},
+        source: {
+            files: {
+                less: ['*.less'],
+                sass: ['*.sass', '*.scss']
+            },
+            config: {
+                underscore: false,
+                recursive: true
+            }
+        },
+        pre: {
+            processor: '<%= properties.preprocessor %>',
+            <% if (properties.preprocessor == "less") { %>options: {
+                relativeUrls: false,
+                rootpath: "../",
+                strictImports: true
+            }<% } %><% if (properties.preprocessor == "sass") { %>options: {
+
+            }
+            <% } %>
+
+        },
+        post: {
+            processor: "pleeease",
+            options: {
+                minifier: false,
+                autoprefixer: {
+                    browsers: [
+                        "Explorer >= 9",
+                        "last 4 versions"
+                    ]
+                }
+            }
+        },
         destination: {
             path: 'css/',
             lib: {name: 'lib.css'}
@@ -62,6 +91,25 @@ function Config() {
     css.watch = css.source.files[css.pre.processor].map(function(file){
         return main.source.root + '**/' + file;
     });
+    css.source.root = process.cwd() + "/" + main.source.root;
+    css.src = [];
+    css.src = css.src.concat( css.source.files[css.pre.processor].map(function(file){
+        var path = "",
+            ignore = ""
+            ;
+
+        if (css.source.config.recursive == true) {
+            path = path + "/**/";
+        }
+        else {
+            path = path + "/";
+        }
+        if (css.source.config.underscore == false) {
+            ignore = "!" + css.source.root + path + "_" + file;
+            this.src.push(ignore);
+        }
+        return css.source.root + path + file;
+    }, css) );
 
     this.filters = filters;
 
@@ -70,7 +118,7 @@ function Config() {
     fonts.destination.path = main.application.root + fonts.destination.path;
 
     this.server = server;
-    if (this.srv.root == '') { this.srv.root = main.application.root; }
+    if (this.server.root == '') { this.server.root = main.application.root; }
 }
 
 module.exports = new Config();

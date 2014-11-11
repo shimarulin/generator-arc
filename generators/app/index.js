@@ -252,6 +252,13 @@ var ArcGenerator = yeoman.generators.Base.extend({
             this.mkdir('src/modules');
 
             this.template('src/_app.html', 'src/app.html');
+            if (this.properties.preprocessor == 'less') {
+                this.copy('src/app.less', 'src/app.less');
+            }
+            else if (this.properties.preprocessor == 'sass') {
+                this.copy('src/app.scss', 'src/app.scss');
+            }
+            this.copy('src/app.js', 'src/app.js');
         },
 
         bower: function () {
@@ -267,8 +274,10 @@ var ArcGenerator = yeoman.generators.Base.extend({
         tasks: function () {
             this.mkdir('tasks/config');
             this.copy('gulpfile.js', 'gulpfile.js');
-            this.template('tasks/config/_config.js', 'tasks/config/config.js');
+            this.template('tasks/config/_config.js.tpl', 'tasks/config/config.js');
+            this.copy('tasks/css.js', 'tasks/css.js');
             this.copy('tasks/lib.js', 'tasks/lib.js');
+            this.copy('tasks/server.js', 'tasks/server.js');
         },
 
         projectfiles: function () {
