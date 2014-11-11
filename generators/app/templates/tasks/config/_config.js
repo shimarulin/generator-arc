@@ -52,6 +52,7 @@ function Config() {
     });
 
     this.fonts = fonts;
+    fonts.path = fonts.destination.path;
     fonts.destination.path = main.application.root + fonts.destination.path;
 
     this.filters = filters;
