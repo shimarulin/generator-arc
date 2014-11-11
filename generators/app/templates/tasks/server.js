@@ -4,7 +4,7 @@
 
 var gulp = require('gulp')
 
-    , srv = require('./config/config').srv
+    , srv = require('./config/config').server
     , webserver = require('gulp-webserver')
     ;
 
