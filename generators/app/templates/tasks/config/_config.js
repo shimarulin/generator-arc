@@ -1,6 +1,6 @@
 'use strict';
 var filter = require('gulp-filter')
-    , minimatch = require("minimatch")
+    , minimatch = require('minimatch')
     , main = {
         application: {root: 'app/'},
         source: {root: 'src/'}
@@ -10,8 +10,11 @@ var filter = require('gulp-filter')
             less: ['*.less'],
             sass: ['*.sass', '*.scss']
         }},
-        pre: {processor: "<%= properties.preprocessor %>"},
-        destination: {path: "css/"}
+        pre: {processor: '<%= properties.preprocessor %>'},
+        destination: {
+            path: 'css/',
+            lib: {name: 'lib.css'}
+        }
     }
     , fonts = {
         destination: {path: "fonts/"}

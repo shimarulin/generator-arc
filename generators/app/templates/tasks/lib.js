@@ -28,7 +28,7 @@ gulp.task('lib.css', [], function () {
     return gulp.src(libs())
         .pipe(filters.css)
         .pipe(sourcemaps.init())
-        .pipe(concat("lib.css"))
+        .pipe(concat(css.destination.lib.name))
         // Replace relative font url
         .pipe(replace(/(url\(['"]?)([^:\/\s]+)((\/\w+)*\/)?([\w\-\.]+)([\?][\#]?[\w\=\&\.]+)?(['"]?\)+)/gm,
             function(str, $1, $2, $3, $4, $5, $6, $7){
