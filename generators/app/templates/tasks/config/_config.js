@@ -10,7 +10,7 @@ var filter = require('gulp-filter')
             less: ['*.less'],
             sass: ['*.sass', '*.scss']
         }},
-        pre: {processor: "less"},
+        pre: {processor: "<%= properties.preprocessor %>"},
         destination: {path: "css/"}
     }
     , fonts = {
