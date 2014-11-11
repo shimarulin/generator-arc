@@ -31,7 +31,16 @@ var filter = require('gulp-filter')
             }
             return conformity;
         }),
-        images: filter('**/*.{svg,png,jpg,gif}')
+        images: filter(function (file) {
+            var conformity = false;
+            if (minimatch(file.path, '**/*.{png,jpg,gif}')) {
+                conformity = true;
+            }
+            else if (minimatch(file.path, '**/*.svg') && file.contents.toString().indexOf("<glyph") === -1) {
+                conformity = true;
+            }
+            return conformity;
+        })
     }
 ;
 
