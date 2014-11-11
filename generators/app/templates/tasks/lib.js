@@ -29,7 +29,7 @@ gulp.task('lib.css', [], function () {
         .pipe(filters.css)
         .pipe(sourcemaps.init())
         .pipe(concat("lib.css"))
-        .pipe(replace(/([^:\/\s]+)((\/\w+)*\/)([\w\-\.\?\#]+)(['"]\))/gm, '$1/'+fonts.path+'$4$5'))
+        .pipe(replace(/([^:\/\s]+)((\/\w+)*\/)([\w\-\.\?\#]+)(['"]\))/gm, '$1/'+fonts.destination.path+'$4$5'))
         .pipe(sourcemaps.write())
         .pipe(gulp.dest(css.destination.path))
 
