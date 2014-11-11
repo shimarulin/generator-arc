@@ -16,9 +16,6 @@ var filter = require('gulp-filter')
             lib: {name: 'lib.css'}
         }
     }
-    , fonts = {
-        destination: {path: "fonts/"}
-    }
     , filters = {
         js: filter('**/*.js'),
         css: filter('**/*.css'),
@@ -45,6 +42,18 @@ var filter = require('gulp-filter')
             return conformity;
         })
     }
+    , fonts = {
+        destination: {path: "fonts/"}
+    }
+    , srv = {
+        "root": "",
+        "options": {
+            "host": "localhost",
+            "port": 8000,
+            "livereload": true,
+            "fallback": "index.html"
+            }
+        }
 ;
 
 function Config() {
@@ -54,11 +63,14 @@ function Config() {
         return main.source.root + '**/' + file;
     });
 
+    this.filters = filters;
+
     this.fonts = fonts;
     fonts.path = fonts.destination.path;
     fonts.destination.path = main.application.root + fonts.destination.path;
 
-    this.filters = filters;
+    this.srv = srv;
+    if (this.srv.root == '') { this.srv.root = main.application.root; }
 }
 
 module.exports = new Config();
