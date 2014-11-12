@@ -1,0 +1,8 @@
+{
+    "options": {
+        "relativeUrls": false,
+        "rootpath": "../",
+        "strictImports": true
+    },
+    "files": ["*.less"]
+}

@@ -7,6 +7,7 @@ var util = require('util'),
     async = require('async'),
     yeoman = require('yeoman-generator'),
     yosay = require('yosay'),
+    githubUsername = require('github-username'),
     colors = require('colors'),
     logger = require('tracer').colorConsole({
         inspectOpt: {
@@ -22,7 +23,13 @@ var util = require('util'),
             error : [ colors.red, colors.bold ]
         }
     }),
-    githubUsername = require('github-username')
+    templateSettings = {
+        js: {
+            evaluate:    /\/\*\<\%(.+?)\%\>\*\//g,
+            interpolate: /"\<\%=(.+?)\%\>"/g,
+            escape: /"\<\%-(.+?)\%\>"/g
+        }
+    }
     ;
 
 var ArcGenerator = yeoman.generators.Base.extend({
@@ -251,6 +258,7 @@ var ArcGenerator = yeoman.generators.Base.extend({
             this.mkdir('src/components');
             this.mkdir('src/modules');
 
+            this.tpl = {};
             this.template('src/_app.html', 'src/app.html');
             if (this.properties.preprocessor == 'less') {
                 this.copy('src/app.less', 'src/app.less');
@@ -272,9 +280,15 @@ var ArcGenerator = yeoman.generators.Base.extend({
         },
 
         tasks: function () {
+            if (this.properties.preprocessor == 'less') {
+                this.tpl.preprocessor = require('./templates/tasks/config/less.json');
+            }
+            else if (this.properties.preprocessor == 'sass') {
+                this.tpl.preprocessor = require('./templates/tasks/config/sass.json');
+            }
             this.mkdir('tasks/config');
             this.copy('gulpfile.js', 'gulpfile.js');
-            this.template('tasks/config/_config.js.tpl', 'tasks/config/config.js');
+            this.template('tasks/config/config.js', 'tasks/config/config.js', undefined, templateSettings.js);
             this.copy('tasks/css.js', 'tasks/css.js');
             this.copy('tasks/lib.js', 'tasks/lib.js');
             this.copy('tasks/server.js', 'tasks/server.js');

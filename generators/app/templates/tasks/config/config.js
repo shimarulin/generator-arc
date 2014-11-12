@@ -7,29 +7,18 @@ var filter = require('gulp-filter')
     }
     , css = {
         source: {
-            files: {
-                less: ['*.less'],
-                sass: ['*.sass', '*.scss']
-            },
+            files: "<%= JSON.stringify(tpl.preprocessor.files) %>",
             config: {
                 underscore: false,
                 recursive: true
             }
         },
-        pre: {
-            processor: '<%= properties.preprocessor %>',
-            <% if (properties.preprocessor == "less") { %>options: {
-                relativeUrls: false,
-                rootpath: "../",
-                strictImports: true
-            }<% } %><% if (properties.preprocessor == "sass") { %>options: {
-
-            }
-            <% } %>
-
+        preprocessor: {
+            name: '"<%= properties.preprocessor %>"',
+            options: "<%= JSON.stringify(tpl.preprocessor.options) %>"
         },
-        post: {
-            processor: "pleeease",
+        postprocessor: {
+            name: "pleeease",
             options: {
                 minifier: false,
                 autoprefixer: {
@@ -49,7 +38,7 @@ var filter = require('gulp-filter')
         js: filter('**/*.js'),
         css: filter('**/*.css'),
         less: filter('**/*.less'),
-        scss: filter('**/*.scss'),
+        scss: filter(['*.sass', '*.scss']),
         fonts: filter(function (file) {
             var conformity = false;
             if (minimatch(file.path, '**/*.{eot,ttf,woff}')) {
@@ -88,12 +77,12 @@ var filter = require('gulp-filter')
 function Config() {
     this.css = css;
     css.destination.path = main.application.root + css.destination.path;
-    css.watch = css.source.files[css.pre.processor].map(function(file){
+    css.watch = css.source.files.map(function(file){
         return main.source.root + '**/' + file;
     });
     css.source.root = process.cwd() + "/" + main.source.root;
     css.src = [];
-    css.src = css.src.concat( css.source.files[css.pre.processor].map(function(file){
+    css.src = css.src.concat( css.source.files.map(function(file){
         var path = "",
             ignore = ""
             ;
