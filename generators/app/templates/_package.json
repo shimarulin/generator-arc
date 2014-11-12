@@ -28,10 +28,10 @@
     "gulp-order": "^1.1.1",
     "gulp-pleeease": "^1.0.4",
     "gulp-plumber": "^0.6.6",
-    "gulp-prompt": "^0.1.1",
     "gulp-replace": "^0.4.0",
     "gulp-sourcemaps": "^1.1.4",
     "gulp-webserver": "^0.8.0",
+    "gulp-<%= properties.preprocessor %>": "*",
     "main-bower-files": "^2.0.0",
     "minimatch": "^1.0.0",
     "require-dir": "*"
