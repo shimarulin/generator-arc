@@ -44,7 +44,7 @@ gulp.task('lib.css', [], function () {
                 }
                 return replace
             }))
-        .pipe(sourcemaps.write())
+        .pipe(sourcemaps.write('.'))
         .pipe(gulp.dest(css.destination.path))
 
 });
