@@ -25,7 +25,7 @@ var util = require('util'),
     }),
     templateSettings = {
         js: {
-            evaluate:    /\/\*\<\%(.+?)\%\>\*\//g,
+            evaluate: /\/\*\<\%(.+?)\%\>\*\//g,
             interpolate: /"\<\%=(.+?)\%\>"/g,
             escape: /"\<\%-(.+?)\%\>"/g
         }
@@ -259,7 +259,7 @@ var ArcGenerator = yeoman.generators.Base.extend({
             this.mkdir('src/modules');
 
             this.tpl = {};
-            this.template('src/_app.html', 'src/app.html');
+            this.template('src/_index.html', 'src/index.html');
             if (this.properties.preprocessor == 'less') {
                 this.copy('src/app.less', 'src/app.less');
             }
