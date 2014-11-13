@@ -5,6 +5,7 @@ var gulp = require('gulp')
     , css = config.css
     , fonts = config.fonts
     , filters = config.filters
+    , scripts = config.scripts
 
     , concat = require('gulp-concat')
     , flatten = require('gulp-flatten')
@@ -15,7 +16,7 @@ var gulp = require('gulp')
     ;
 
 
-gulp.task('lib.font', function () {
+gulp.task('lib.fonts', function () {
     return gulp.src(libs())
         .pipe(filters.fonts)
         .pipe(flatten())
@@ -23,7 +24,7 @@ gulp.task('lib.font', function () {
 });
 
 
-gulp.task('lib.css', [], function () {
+gulp.task('lib.styles', [], function () {
 
     return gulp.src(libs())
         .pipe(filters.css)
@@ -48,3 +49,19 @@ gulp.task('lib.css', [], function () {
         .pipe(gulp.dest(css.destination.path))
 
 });
+
+gulp.task('lib.scripts', function () {
+    return gulp.src(libs())
+        .pipe(filters.js)
+        .pipe(order([
+            "**/*angular*",
+            "**/*jquery*",
+            "**/*"
+        ]))
+        .pipe(sourcemaps.init())
+        .pipe(concat(scripts.destination.lib.name))
+        .pipe(sourcemaps.write('.'))
+        .pipe(gulp.dest(scripts.destination.path))
+});
+
+gulp.task('lib', ['lib.fonts', 'lib.styles', 'lib.scripts']);

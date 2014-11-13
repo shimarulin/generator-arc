@@ -63,6 +63,12 @@ var filter = require('gulp-filter')
     , fonts = {
         destination: {path: "fonts/"}
     }
+    , scripts = {
+        destination: {
+            path: 'js/',
+            lib: {name: 'lib.js'}
+        }
+    }
     , server = {
         "root": "",
         "options": {
@@ -105,6 +111,9 @@ function Config() {
     this.fonts = fonts;
     fonts.path = fonts.destination.path;
     fonts.destination.path = main.application.root + fonts.destination.path;
+
+    this.scripts = scripts;
+    scripts.destination.path = main.application.root + scripts.destination.path;
 
     this.server = server;
     if (this.server.root == '') { this.server.root = main.application.root; }
