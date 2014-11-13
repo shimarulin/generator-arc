@@ -94,16 +94,13 @@ function Config() {
             ;
 
         if (css.source.config.recursive == true) {
-            path = path + "/**/";
-        }
-        else {
-            path = path + "/";
+            path = path + "**/";
         }
         if (css.source.config.underscore == false) {
-            ignore = "!" + css.source.root + path + "_" + file;
+            ignore = "!" + main.source.root + path + "_" + file;
             this.src.push(ignore);
         }
-        return css.source.root + path + file;
+        return main.source.root + path + file;
     }, css) );
 
     this.filters = filters;
