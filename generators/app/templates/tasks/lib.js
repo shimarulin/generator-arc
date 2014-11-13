@@ -2,7 +2,7 @@
 var gulp = require('gulp')
 
     , config = require('./config/config')
-    , css = config.css
+    , styles = config.styles
     , fonts = config.fonts
     , filters = config.filters
     , scripts = config.scripts
@@ -29,7 +29,7 @@ gulp.task('lib.styles', [], function () {
     return gulp.src(libs())
         .pipe(filters.css)
         .pipe(sourcemaps.init())
-        .pipe(concat(css.destination.lib.name))
+        .pipe(concat(styles.destination.lib.name))
         // Replace relative font url
         .pipe(replace(/(url\(['"]?)([^:\/\s]+)((\/\w+)*\/)?([\w\-\.]+)([\?][\#]?[\w\=\&\.]+)?(['"]?\)+)/gm,
             function(str, $1, $2, $3, $4, $5, $6, $7){
@@ -46,7 +46,7 @@ gulp.task('lib.styles', [], function () {
                 return replace
             }))
         .pipe(sourcemaps.write('.'))
-        .pipe(gulp.dest(css.destination.path))
+        .pipe(gulp.dest(styles.destination.path))
 
 });
 

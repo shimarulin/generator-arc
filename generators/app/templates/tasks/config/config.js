@@ -5,7 +5,7 @@ var filter = require('gulp-filter')
         application: {root: 'app/'},
         source: {root: 'src/'}
     }
-    , css = {
+    , styles = {
         source: {
             files: "<%= JSON.stringify(tpl.preprocessor.files) %>",
             config: {
@@ -81,27 +81,13 @@ var filter = require('gulp-filter')
 ;
 
 function Config() {
-    this.css = css;
-    css.destination.path = main.application.root + css.destination.path;
-    css.watch = css.source.files.map(function(file){
+    this.styles = styles;
+    styles.destination.path = main.application.root + styles.destination.path;
+    styles.watch = styles.source.files.map(function(file){
         return main.source.root + '**/' + file;
     });
-    css.source.root = process.cwd() + "/" + main.source.root;
-    css.src = [];
-    css.src = css.src.concat( css.source.files.map(function(file){
-        var path = "",
-            ignore = ""
-            ;
-
-        if (css.source.config.recursive == true) {
-            path = path + "**/";
-        }
-        if (css.source.config.underscore == false) {
-            ignore = "!" + main.source.root + path + "_" + file;
-            this.src.push(ignore);
-        }
-        return main.source.root + path + file;
-    }, css) );
+    styles.source.root = process.cwd() + "/" + main.source.root;
+    styles.src = _fileset(styles);
 
     this.filters = filters;
 
@@ -117,3 +103,21 @@ function Config() {
 }
 
 module.exports = new Config();
+
+function _fileset(config) {
+    var _src = [];
+    return _src.concat( config.source.files.map(function(file){
+        var path = "",
+            ignore = ""
+            ;
+
+        if (config.source.config.recursive == true) {
+            path = path + "**/";
+        }
+        if (config.source.config.underscore == false) {
+            ignore = "!" + main.source.root + path + "_" + file;
+            _src.push(ignore);
+        }
+        return main.source.root + path + file;
+    }, config) );
+}

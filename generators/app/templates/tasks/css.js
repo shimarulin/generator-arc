@@ -8,20 +8,20 @@
 
 var gulp = require('gulp')
 
-    , css = require('./config/config').css
-    , preprocessor = require('gulp-' + css.preprocessor.name)
-    , postprocessor = require('gulp-' + css.postprocessor.name)
+    , styles = require('./config/config').styles
+    , preprocessor = require('gulp-' + styles.preprocessor.name)
+    , postprocessor = require('gulp-' + styles.postprocessor.name)
     , sourcemaps = require('gulp-sourcemaps')
     ;
 
-gulp.task('css', [], function () {
+gulp.task('styles', [], function () {
 
-    return gulp.src(css.src)
+    return gulp.src(styles.src)
         .pipe(sourcemaps.init())
-        .pipe(preprocessor(css.preprocessor.options))
-        .pipe(postprocessor(css.postprocessor.options))
-        .pipe(sourcemaps.write('.', { sourceRoot: css.source.root }))
-        .pipe(gulp.dest(css.destination.path))
+        .pipe(preprocessor(styles.preprocessor.options))
+        .pipe(postprocessor(styles.postprocessor.options))
+        .pipe(sourcemaps.write('.', { sourceRoot: styles.source.root }))
+        .pipe(gulp.dest(styles.destination.path))
         ;
 
 });
