@@ -9,6 +9,6 @@ var gulp = require('gulp')
     ;
 
 gulp.task('server', function() {
-    gulp.src(srv.root)
+    gulp.src(srv.watch)
         .pipe(webserver(srv.options));
 });

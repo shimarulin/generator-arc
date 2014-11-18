@@ -29,6 +29,20 @@ var cwd = process.cwd()// current working directory
         })
     };
 
+/**
+ * Task config
+ * */
+var task = {
+    source: {
+        root: 'dir', // overwrite default
+        extensions: ['ext1', 'ext2'],
+        options: {
+            underscore: false,
+            recursive: false
+        }
+    }
+};
+
 var directory = {
         application: 'app/',
         build: 'build/',
@@ -61,21 +75,21 @@ var directory = {
             }
         },
         destination: {
-            path: 'css/',
-            lib: {name: 'lib.css'}
+            path: 'css/'
         }
     }
     , fonts = {
-        destination: {path: "fonts/"}
+        destination: {
+            path: "fonts/"
+        }
     }
     , scripts = {
         destination: {
-            path: 'js/',
-            lib: {name: 'lib.js'}
+            path: 'js/'
         }
     }
     , server = {
-        "root": "",
+        source: {root: directory.application},
         "options": {
             "host": "localhost",
             "port": 8000,
@@ -107,12 +121,20 @@ function Task (config) {
 
     this.source = {};
     this.source.files = _globs(recursive, underscore);
-    this.source.root = {
-        absolute: cwd + '/' + directory.source,
-        relative: directory.source
-    };
-
-    this.watch = _globs(true, true);
+    if (thereIs(config, "source.root", undefined)) {
+        this.source.root = {
+            absolute: cwd + '/' + config.source.root,
+            relative: config.source.root
+        };
+        this.watch = _globs(true, true, config.source.root);
+    }
+    else {
+        this.source.root = {
+            absolute: cwd + '/' + directory.source,
+            relative: directory.source
+        };
+        this.watch = _globs(true, true);
+    }
 
     for(var i in config) {
         if (config.hasOwnProperty(i) && _inspect.bind(this)(i) != true) {
@@ -134,11 +156,16 @@ function Task (config) {
     /**
      * Make array of globs
      * */
-    function _globs(recursive, underscore) {
-        if (thereIs(config, "source.extensions", undefined) === undefined) {
+
+    function _globs(recursive, underscore, dir) {
+        var _src = [],
+            _dir = (dir !== undefined) ? dir : directory.source;
+        if (thereIs(config, "source.extensions", undefined) === undefined && dir === undefined) {
             return null;
         }
-        var _src = [];
+        else if (thereIs(config, "source.extensions", undefined) === undefined && dir !== undefined) {
+            return _dir;
+        }
         return _src.concat(config.source.extensions.map(function(ext){
             var path = "",
                 ignore = ""
@@ -150,10 +177,10 @@ function Task (config) {
                 path = path + "";
             }
             if (underscore == false) {
-                ignore = "!" + directory.source + path + "_*." + ext;
+                ignore = "!" + _dir + path + "_*." + ext;
                 _src.push(ignore);
             }
-            return directory.source + path + "*." + ext;
+            return _dir + path + "*." + ext;
         }));
     }
 }
