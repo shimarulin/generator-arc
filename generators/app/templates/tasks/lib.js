@@ -2,11 +2,10 @@
 var gulp = require('gulp')
 
     , config = require('./config/config')
-    , styles = config.styles
-    , fonts = config.fonts
+    , styles = config.lib.styles
+    , fonts = config.lib.fonts
     , filters = config.filters
-    , scripts = config.scripts
-
+    , scripts = config.lib.scripts
     , concat = require('gulp-concat')
     , flatten = require('gulp-flatten')
     , order = require("gulp-order")
@@ -29,7 +28,7 @@ gulp.task('lib.styles', [], function () {
     return gulp.src(libs())
         .pipe(filters.css)
         .pipe(sourcemaps.init())
-        .pipe(concat(styles.destination.lib.name))
+        .pipe(concat(styles.destination.name))
         // Replace relative font url
         .pipe(replace(/(url\(['"]?)([^:\/\s]+)((\/\w+)*\/)?([\w\-\.]+)([\?][\#]?[\w\=\&\.]+)?(['"]?\)+)/gm,
             function(str, $1, $2, $3, $4, $5, $6, $7){
@@ -59,7 +58,7 @@ gulp.task('lib.scripts', function () {
             "**/*"
         ]))
         .pipe(sourcemaps.init())
-        .pipe(concat(scripts.destination.lib.name))
+        .pipe(concat(scripts.destination.name))
         .pipe(sourcemaps.write('.'))
         .pipe(gulp.dest(scripts.destination.path))
 });

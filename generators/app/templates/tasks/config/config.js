@@ -48,6 +48,44 @@ var directory = {
      * @property {object}           destination.name            - destination filename
      * @property {object}           destination.path            - destination path
      */
+    fonts = {
+        destination: {
+            path: "fonts/"
+        }
+    },
+    lib = {
+        fonts: {
+            destination: {
+                path: "fonts/"
+            }
+        },
+        scripts: {
+            destination: {
+                name: 'lib.js',
+                path: "js/"
+            }
+        },
+        styles: {
+            destination: {
+                name: 'lib.css',
+                path: "css/"
+            }
+        }
+    },
+    scripts = {
+        destination: {
+            path: 'js/'
+        }
+    },
+    server = {
+        source: {root: directory.application},
+        "options": {
+            "host": "localhost",
+            "port": 8000,
+            "livereload": true,
+            "fallback": "index.html"
+        }
+    },
     styles = {
         source: {
             extensions: "<%= JSON.stringify(tpl.preprocessor.extensions) %>",
@@ -77,25 +115,6 @@ var directory = {
         destination: {
             path: 'css/'
         }
-    },
-    fonts = {
-        destination: {
-            path: "fonts/"
-        }
-    },
-    scripts = {
-        destination: {
-            path: 'js/'
-        }
-    },
-    server = {
-        source: {root: directory.application},
-        "options": {
-            "host": "localhost",
-            "port": 8000,
-            "livereload": true,
-            "fallback": "index.html"
-        }
     }
 ;
 
@@ -104,6 +123,11 @@ function Config() {
     this.scripts = new Task(scripts);
     this.server = new Task(server);
     this.styles = new Task(styles);
+    this.lib = {};
+    this.lib.fonts = new Task(lib.fonts);
+    this.lib.scripts = new Task(lib.scripts);
+    this.lib.styles = new Task(lib.styles);
+
     this.filters = filters;
 }
 
