@@ -1,7 +1,7 @@
 {
+    "extensions": ["sass", "scss"],
+    "module": "gulp-sass",
     "options": {
 
-    },
-    "extensions": ["sass", "scss"],
-    "module": "gulp-sass"
+    }
 }

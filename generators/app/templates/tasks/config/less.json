@@ -1,9 +1,9 @@
 {
+    "extensions": ["less"],
+    "module": "gulp-less",
     "options": {
         "relativeUrls": false,
         "rootpath": "../",
         "strictImports": true
-    },
-    "extensions": ["less"],
-    "module": "gulp-less"
+    }
 }
