@@ -1,4 +1,5 @@
 'use strict';
+
 var cwd = process.cwd()// current working directory
     , filter = require('gulp-filter')
     , minimatch = require('minimatch')
@@ -29,26 +30,25 @@ var cwd = process.cwd()// current working directory
         })
     };
 
-/**
- * Task config
- * */
-var task = {
-    source: {
-        root: 'dir', // overwrite default
-        extensions: ['ext1', 'ext2'],
-        options: {
-            underscore: false,
-            recursive: false
-        }
-    }
-};
-
 var directory = {
         application: 'app/',
         build: 'build/',
         source: 'src/'
-    }
-    , styles = {
+    },
+    /**
+     * Task config
+     * @type {object}
+     * @property {object}           source                      - source globs math
+     * @property {(string|Array.)}  source.extensions           - files extensions
+     * @property {object}           source.options              - globs match options
+     * @property {boolean}          source.option.recursive     - recursive search
+     * @property {boolean}          source.option.underscore    - ignore underscored files
+     * @property {(string|Array.)}  source.root                 - overwrite default root
+     * @property {object}           destination                 - destination options
+     * @property {object}           destination.name            - destination filename
+     * @property {object}           destination.path            - destination path
+     */
+    styles = {
         source: {
             extensions: "<%= JSON.stringify(tpl.preprocessor.extensions) %>",
             options: {
@@ -77,18 +77,18 @@ var directory = {
         destination: {
             path: 'css/'
         }
-    }
-    , fonts = {
+    },
+    fonts = {
         destination: {
             path: "fonts/"
         }
-    }
-    , scripts = {
+    },
+    scripts = {
         destination: {
             path: 'js/'
         }
-    }
-    , server = {
+    },
+    server = {
         source: {root: directory.application},
         "options": {
             "host": "localhost",
