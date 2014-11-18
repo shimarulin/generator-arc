@@ -4,5 +4,6 @@
         "rootpath": "../",
         "strictImports": true
     },
-    "files": ["*.less"]
+    "extensions": ["less"],
+    "module": "gulp-less"
 }

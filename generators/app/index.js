@@ -258,7 +258,6 @@ var ArcGenerator = yeoman.generators.Base.extend({
             this.mkdir('src/components');
             this.mkdir('src/modules');
 
-            this.tpl = {};
             this.template('src/_index.html', 'src/index.html');
             if (this.properties.preprocessor == 'less') {
                 this.copy('src/app.less', 'src/app.less');
@@ -280,6 +279,7 @@ var ArcGenerator = yeoman.generators.Base.extend({
         },
 
         tasks: function () {
+            this.tpl = {};
             if (this.properties.preprocessor == 'less') {
                 this.tpl.preprocessor = require('./templates/tasks/config/less.json');
             }

@@ -1,39 +1,7 @@
 'use strict';
-var filter = require('gulp-filter')
+var cwd = process.cwd()// current working directory
+    , filter = require('gulp-filter')
     , minimatch = require('minimatch')
-    , main = {
-        application: {root: 'app/'},
-        source: {root: 'src/'}
-    }
-    , styles = {
-        source: {
-            files: "<%= JSON.stringify(tpl.preprocessor.files) %>",
-            config: {
-                underscore: false,
-                recursive: true
-            }
-        },
-        preprocessor: {
-            name: '"<%= properties.preprocessor %>"',
-            options: "<%= JSON.stringify(tpl.preprocessor.options) %>"
-        },
-        postprocessor: {
-            name: "pleeease",
-            options: {
-                minifier: false,
-                autoprefixer: {
-                    browsers: [
-                        "Explorer >= 9",
-                        "last 4 versions"
-                    ]
-                }
-            }
-        },
-        destination: {
-            path: 'css/',
-            lib: {name: 'lib.css'}
-        }
-    }
     , filters = {
         js: filter('**/*.js'),
         css: filter('**/*.css'),
@@ -59,6 +27,43 @@ var filter = require('gulp-filter')
             }
             return conformity;
         })
+    };
+
+var directory = {
+        application: 'app/',
+        build: 'build/',
+        source: 'src/'
+    }
+    , styles = {
+        source: {
+            extensions: "<%= JSON.stringify(tpl.preprocessor.extensions) %>",
+            options: {
+                underscore: false,
+                recursive: false
+            }
+        },
+        preprocessor: {
+            name: '"<%= properties.preprocessor %>"',
+            module: '"<%= tpl.preprocessor.module %>"',
+            options: "<%= JSON.stringify(tpl.preprocessor.options) %>"
+        },
+        postprocessor: {
+            name: "pleeease",
+            module: 'gulp-pleeease',
+            options: {
+                minifier: false,
+                autoprefixer: {
+                    browsers: [
+                        "Explorer >= 9",
+                        "last 4 versions"
+                    ]
+                }
+            }
+        },
+        destination: {
+            path: 'css/',
+            lib: {name: 'lib.css'}
+        }
     }
     , fonts = {
         destination: {path: "fonts/"}
@@ -76,48 +81,102 @@ var filter = require('gulp-filter')
             "port": 8000,
             "livereload": true,
             "fallback": "index.html"
-            }
         }
+    }
 ;
 
 function Config() {
-    this.styles = styles;
-    styles.destination.path = main.application.root + styles.destination.path;
-    styles.watch = styles.source.files.map(function(file){
-        return main.source.root + '**/' + file;
-    });
-    styles.source.root = process.cwd() + "/" + main.source.root;
-    styles.src = _fileset(styles);
-
+    this.fonts = new Task(fonts);
+    this.scripts = new Task(scripts);
+    this.server = new Task(server);
+    this.styles = new Task(styles);
     this.filters = filters;
-
-    this.fonts = fonts;
-    fonts.path = fonts.destination.path;
-    fonts.destination.path = main.application.root + fonts.destination.path;
-
-    this.scripts = scripts;
-    scripts.destination.path = main.application.root + scripts.destination.path;
-
-    this.server = server;
-    if (this.server.root == '') { this.server.root = main.application.root; }
 }
 
 module.exports = new Config();
 
-function _fileset(config) {
-    var _src = [];
-    return _src.concat( config.source.files.map(function(file){
-        var path = "",
-            ignore = ""
-            ;
+function Task (config) {
 
-        if (config.source.config.recursive == true) {
-            path = path + "**/";
+    var recursive = thereIs(config, "source.options.recursive", true),
+        underscore  = thereIs(config, "source.options.underscore", true);
+
+    this.destination = {
+        name: thereIs(config, "destination.name", false) ? (directory.application + config.destination.name) : null,
+        path: thereIs(config, "destination.path", false) ? (directory.application + config.destination.path) : null
+    };
+
+    this.source = {};
+    this.source.files = _globs(recursive, underscore);
+    this.source.root = {
+        absolute: cwd + '/' + directory.source,
+        relative: directory.source
+    };
+
+    this.watch = _globs(true, true);
+
+    for(var i in config) {
+        if (config.hasOwnProperty(i) && _inspect.bind(this)(i) != true) {
+            this[i] = config[i];
         }
-        if (config.source.config.underscore == false) {
-            ignore = "!" + main.source.root + path + "_" + file;
-            _src.push(ignore);
+    }
+
+    /**
+     * Verification of the existence
+     * */
+    function _inspect(prop) {
+        for(var i in this) {
+            if (this.hasOwnProperty(i) && i == prop) {
+                return true
+            }
         }
-        return main.source.root + path + file;
-    }, config) );
+    }
+
+    /**
+     * Make array of globs
+     * */
+    function _globs(recursive, underscore) {
+        if (thereIs(config, "source.extensions", undefined) === undefined) {
+            return null;
+        }
+        var _src = [];
+        return _src.concat(config.source.extensions.map(function(ext){
+            var path = "",
+                ignore = ""
+                ;
+            if (recursive == true) {
+                path = path + "**/";
+            }
+            else {
+                path = path + "";
+            }
+            if (underscore == false) {
+                ignore = "!" + directory.source + path + "_*." + ext;
+                _src.push(ignore);
+            }
+            return directory.source + path + "*." + ext;
+        }));
+    }
+}
+
+/**
+ * Making Deep Property Access Safe in JavaScript
+ * http://designpepper.com/blog/drips/making-deep-property-access-safe-in-javascript.html
+ * https://github.com/joshuacc/drabs/blob/master/src/drabs.js
+ * */
+function thereIs(obj, props, defaultValue) {
+    if (typeof props === "string") {
+        props = props.split(".");
+    }
+    var thereIsByArray = function (obj, propsArray, defaultValue) {
+        if (obj === undefined || obj === null) {
+            return defaultValue;
+        }
+        if (propsArray.length === 0) {
+            return obj;
+        }
+        var foundSoFar = obj[propsArray[0]];
+        var remainingProps = propsArray.slice(1);
+        return thereIsByArray(foundSoFar, remainingProps, defaultValue);
+    };
+    return thereIsByArray(obj, props, defaultValue);
 }

@@ -2,5 +2,6 @@
     "options": {
 
     },
-    "files": ["*.sass", "*.scss"]
+    "extensions": ["sass", "scss"],
+    "module": "gulp-sass"
 }

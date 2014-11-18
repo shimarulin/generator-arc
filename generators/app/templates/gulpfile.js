@@ -13,7 +13,7 @@ var gulp = require('gulp')
     ;
 
 gulp.task('default', requireTasks, function() {
-    gulp.watch(config.css.watch, ['styles']);
+    gulp.watch(config.styles.watch, ['styles']);
 });
 
 
