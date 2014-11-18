@@ -3,6 +3,7 @@ var util = require('util'),
     path = require('path'),
     querystring = require('querystring'),
     https = require('https'),
+    http = require('http'),
     exec = require('child_process').exec,
     async = require('async'),
     yeoman = require('yeoman-generator'),
@@ -58,9 +59,21 @@ var ArcGenerator = yeoman.generators.Base.extend({
             defaults: false
         });
 
+        this.option('gitlab', {
+            desc: 'Use you gitlab account for configuring repository url',
+            type: Boolean,
+            defaults: false
+        });
+
         this.option('create', {
             desc: 'Create remote repository',
             type: Boolean,
+            defaults: false
+        });
+
+        this.option('email', {
+            desc: 'Overwrite you email',
+            type: String,
             defaults: false
         });
     },
@@ -78,7 +91,14 @@ var ArcGenerator = yeoman.generators.Base.extend({
         this.projectName = this._.slugify(this._.humanize(this.projectName));
         this.readableName = this._.capitalize(this._.humanize(this.projectName));
         this.username = this.user.git.name();
-        this.useremail = this.user.git.email();
+        if (typeof this.options.email === 'string') {
+            this.useremail = this.options.email;
+        }
+        else {
+            this.useremail = this.user.git.email();
+        }
+
+        logger.log(this.useremail, typeof this.options.email);
 
         if (this.options.github == true) {
             githubUsername(this.useremail, function (err, username) {
@@ -132,19 +152,68 @@ var ArcGenerator = yeoman.generators.Base.extend({
                 default: 0
             },
             {
+                type: 'input',
+                name: 'repositoryUrl',
+                message: 'Enter your ' + serviceName() + ' repository url',
+                default: 'gitlab.com',
+                when: function () {
+                    return yo.options.gitlab
+                }
+            },
+            {
                 type: 'password',
                 name: 'password',
                 message: 'Enter your ' + serviceName() + ' password',
                 default: '',
                 when: function () {
-                    return yo.options.create && (yo.options.bitbucket || yo.options.github)
+                    return (yo.options.create && (yo.options.bitbucket || yo.options.github)) || yo.options.gitlab
                 }
             }
         ];
 
         this.prompt(prompts, function (props) {
             this.properties = props;
-            done();
+
+            if (yo.options.gitlab) {
+                console.log('Access GitLab Api');
+                var params, options, req;
+                params = JSON.stringify({
+                    'email': this.useremail,
+                    'password': this.properties.password
+                });
+                logger.info(this.properties.repositoryUrl);
+                logger.info(params);
+                options = {
+                    hostname: this.properties.repositoryUrl,
+                    path: '/api/v3/session',
+                    method: 'POST',
+                    headers: {
+//                        'Accept': 'application/vnd.github.v3+json',
+                        'User-Agent': 'Yeoman-Generator-Arc',
+                        'Content-type': 'application/json'
+                    }
+                };
+                req = http.request(options, function(res) {
+                    res.setEncoding('utf8');
+                    res.on('data', function(chunk) {
+                        this.user.gitlab = JSON.parse(chunk);
+                        logger.log(JSON.parse(chunk));
+                        this.remote = true;
+                        done();
+                    }.bind(this));
+                }.bind(this));
+                req.write(params);
+                req.end();
+
+                req.on('error', function(e) {
+                    this.log("Got error: ".red.bold, colors.red(e.message));
+                    done();
+                }.bind(this));
+            }
+            else {
+                done();
+            }
+
         }.bind(this));
 
         function serviceName () {
@@ -154,6 +223,9 @@ var ArcGenerator = yeoman.generators.Base.extend({
             }
             else if (yo.options.bitbucket) {
                 name = 'BitBucket'
+            }
+            else if (yo.options.gitlab) {
+                name = 'GitLab'
             }
             return name;
         }
@@ -173,6 +245,12 @@ var ArcGenerator = yeoman.generators.Base.extend({
             this.url.bugs = 'https://bitbucket.org/' + this.user.bitbucket.username + '/' + this.projectName + '/issues';
             this.url.home = 'http://bitbucket.org/' + this.user.bitbucket.username;
             this.repository = 'git@bitbucket.org:' + this.user.bitbucket.username + '/' + this.projectName + '.git';
+        }
+        else if (this.options.gitlab) {
+            this.url.repo = 'https://' + this.properties.repositoryUrl + '/' + this.user.gitlab.username + '/' + this.projectName + '.git';
+            this.url.bugs = 'https://' + this.properties.repositoryUrl + '/' + this.user.gitlab.username + '/' + this.projectName + '/issues';
+            this.url.home = 'http://' + this.properties.repositoryUrl + '/u/' + this.user.gitlab.username;
+            this.repository = 'git@' + this.properties.repositoryUrl + ':' + this.user.gitlab.username + '/' + this.projectName + '.git';
         }
         else {
             this.url.repo = 'https://example.com/' + this.projectName + '.git';
@@ -246,6 +324,21 @@ var ArcGenerator = yeoman.generators.Base.extend({
                 this.log("Got error: ".red.bold, colors.red(e.message));
                 done();
             }.bind(this));
+        }
+        else if (this.options.gitlab && this.options.create) {
+            params = {
+                'name' : this.projectName,
+                'wiki_enabled' : false,
+                'public': false
+            };
+            var gitlab = require('gitlab')({
+                url:   'http://' + this.properties.repositoryUrl,
+                token: this.user.gitlab.private_token
+            });
+            gitlab.projects.create(params, function(data) {
+                logger.info(data);
+                done();
+            });
         }
         else {
             done();
