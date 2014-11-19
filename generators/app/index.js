@@ -76,6 +76,12 @@ var ArcGenerator = yeoman.generators.Base.extend({
             type: String,
             defaults: false
         });
+
+        this.option('nossl', {
+            desc: 'Overwrite you email',
+            type: Boolean,
+            defaults: false
+        });
     },
 
     initializing: function () {
@@ -88,17 +94,20 @@ var ArcGenerator = yeoman.generators.Base.extend({
 
         this.pkg = require('../../package.json');
         this.bowerrc = this.src.readJSON('bowerrc');
+        this.readableName = function(){
+            return this.projectName.match(/\s/) !== null ? this.projectName : this._.capitalize(this._.humanize(this.projectName))
+        }.bind(this)();
         this.projectName = this._.slugify(this._.humanize(this.projectName));
-        this.readableName = this._.capitalize(this._.humanize(this.projectName));
-        this.username = this.user.git.name();
-        if (typeof this.options.email === 'string') {
-            this.useremail = this.options.email;
-        }
-        else {
-            this.useremail = this.user.git.email();
-        }
+        logger.log(this.projectName, this.readableName);
 
-        logger.log(this.useremail, typeof this.options.email);
+        this.username = this.user.git.name();
+        this.useremail = function(email){
+            return typeof email === 'string' ? email : this.user.git.email();
+        }.bind(this)(this.options.email);
+        this.protocol = function(nossl){
+            return nossl ? "http://" : "https://";
+        }(this.options.nossl);
+
 
         if (this.options.github == true) {
             githubUsername(this.useremail, function (err, username) {
@@ -188,20 +197,16 @@ var ArcGenerator = yeoman.generators.Base.extend({
                     path: '/api/v3/session',
                     method: 'POST',
                     headers: {
-//                        'Accept': 'application/vnd.github.v3+json',
                         'User-Agent': 'Yeoman-Generator-Arc',
                         'Content-type': 'application/json'
                     }
                 };
-                req = http.request(options, function(res) {
-                    res.setEncoding('utf8');
-                    res.on('data', function(chunk) {
-                        this.user.gitlab = JSON.parse(chunk);
-                        logger.log(JSON.parse(chunk));
-                        this.remote = true;
-                        done();
-                    }.bind(this));
-                }.bind(this));
+                if (this.options.nossl) {
+                    req = http.request(options, responseHandler.bind(this));
+                }
+                else {
+                    req = https.request(options, responseHandler.bind(this));
+                }
                 req.write(params);
                 req.end();
 
@@ -212,6 +217,15 @@ var ArcGenerator = yeoman.generators.Base.extend({
             }
             else {
                 done();
+            }
+
+            function responseHandler(res){
+                res.setEncoding('utf8');
+                res.on('data', function(chunk) {
+                    this.user.gitlab = JSON.parse(chunk);
+                    this.remote = true;
+                    done();
+                }.bind(this));
             }
 
         }.bind(this));
@@ -247,9 +261,9 @@ var ArcGenerator = yeoman.generators.Base.extend({
             this.repository = 'git@bitbucket.org:' + this.user.bitbucket.username + '/' + this.projectName + '.git';
         }
         else if (this.options.gitlab) {
-            this.url.repo = 'https://' + this.properties.repositoryUrl + '/' + this.user.gitlab.username + '/' + this.projectName + '.git';
-            this.url.bugs = 'https://' + this.properties.repositoryUrl + '/' + this.user.gitlab.username + '/' + this.projectName + '/issues';
-            this.url.home = 'http://' + this.properties.repositoryUrl + '/u/' + this.user.gitlab.username;
+            this.url.repo = this.protocol + this.properties.repositoryUrl + '/' + this.user.gitlab.username + '/' + this.projectName + '.git';
+            this.url.bugs = this.protocol + this.properties.repositoryUrl + '/' + this.user.gitlab.username + '/' + this.projectName + '/issues';
+            this.url.home = this.protocol + this.properties.repositoryUrl + '/u/' + this.user.gitlab.username;
             this.repository = 'git@' + this.properties.repositoryUrl + ':' + this.user.gitlab.username + '/' + this.projectName + '.git';
         }
         else {
@@ -257,10 +271,6 @@ var ArcGenerator = yeoman.generators.Base.extend({
             this.url.bugs = 'https://example.com/' + this.projectName + '/issues';
             this.url.home = 'http://example.com/' + this.projectName;
         }
-        this.log(
-//            logger.log(this.options),
-//            logger.info(this)
-        );
 
         var params, options, req;
         if (this.options.github && this.options.create) {
@@ -332,7 +342,7 @@ var ArcGenerator = yeoman.generators.Base.extend({
                 'public': false
             };
             var gitlab = require('gitlab')({
-                url:   'http://' + this.properties.repositoryUrl,
+                url:   this.protocol + this.properties.repositoryUrl,
                 token: this.user.gitlab.private_token
             });
             gitlab.projects.create(params, function(data) {
