@@ -85,8 +85,6 @@ var ArcGenerator = yeoman.generators.Base.extend({
     },
 
     initializing: function () {
-        var done = this.async();
-
         // Have Yeoman greet the user.
         this.log(yosay(
             'Welcome to the awesome Arc generator!'
@@ -94,49 +92,20 @@ var ArcGenerator = yeoman.generators.Base.extend({
 
         this.pkg = require('../../package.json');
         this.bowerrc = this.src.readJSON('bowerrc');
+
         this.readableName = function(){
             return this.projectName.match(/\s/) !== null ? this.projectName : this._.capitalize(this._.humanize(this.projectName))
         }.bind(this)();
         this.projectName = this._.slugify(this._.humanize(this.projectName));
-        logger.log(this.projectName, this.readableName);
 
         this.username = this.user.git.name();
         this.useremail = function(email){
             return typeof email === 'string' ? email : this.user.git.email();
         }.bind(this)(this.options.email);
+
         this.protocol = function(nossl){
             return nossl ? "http://" : "https://";
         }(this.options.nossl);
-
-
-        if (this.options.github == true) {
-            githubUsername(this.useremail, function (err, username) {
-                if (err === null) {
-                    this.user.github.name = username;
-                }
-                else {
-                    this.log(colors.red.bold(err));
-                    this.user.github.name =  this._.strLeft(this.useremail, '@');
-                }
-                done();
-            }.bind(this));
-        }
-        else if (this.options.bitbucket == true) {
-            https
-                .get("https://bitbucket.org/api/1.0/users/" + this.useremail, function(res) {
-                    res.on("data", function(chunk) {
-                        this.user.bitbucket = JSON.parse(chunk).user;
-                        done();
-                    }.bind(this));
-                }.bind(this))
-                .on('error', function(e) {
-                    this.log("Got error: ".red.bold, colors.red(e.message));
-                    done();
-                }.bind(this));
-        }
-        else {
-            done();
-        }
 
     },
 
@@ -183,9 +152,55 @@ var ArcGenerator = yeoman.generators.Base.extend({
         this.prompt(prompts, function (props) {
             this.properties = props;
 
-            if (yo.options.gitlab) {
-                console.log('Access GitLab Api');
-                var params, options, req;
+            var params, options, req;
+            if (this.options.github) {
+                options = {
+                        hostname: 'api.github.com',
+                        path: '/users/',
+                        headers: {
+                            'Accept': 'application/vnd.github.v3+json',
+                            'User-Agent': 'Yeoman-Generator-Arc',
+                            'Content-type': 'application/json'
+                        }
+                    };
+                githubUsername(this.useremail, function (err, username) {
+                    if (err === null) {
+                        this.user.github.user = username;
+                    }
+                    else {
+                        this.log(colors.red.bold(err));
+                        this.user.github.user =  this._.strLeft(this.useremail, '@');
+                    }
+                    options.path += username;
+                    logger.log(options.path);
+                    https
+                        .get(options, function(res) {
+                            res.on("data", function(chunk) {
+                                var name = JSON.parse(chunk).name;
+                                this.user.github.name = (name !== ('' || undefined)) ? name : this.username;
+                                done();
+                            }.bind(this));
+                        }.bind(this))
+                        .on('error', function(e) {
+                            this.log("Got error: ".red.bold, colors.red(e.message));
+                            done();
+                        }.bind(this));
+                }.bind(this));
+            }
+            else if (this.options.bitbucket) {
+                https
+                    .get("https://bitbucket.org/api/1.0/users/" + this.useremail, function(res) {
+                        res.on("data", function(chunk) {
+                            this.user.bitbucket = JSON.parse(chunk).user;
+                            done();
+                        }.bind(this));
+                    }.bind(this))
+                    .on('error', function(e) {
+                        this.log("Got error: ".red.bold, colors.red(e.message));
+                        done();
+                    }.bind(this));
+            }
+            else if (this.options.gitlab) {
                 params = JSON.stringify({
                     'email': this.useremail,
                     'password': this.properties.password
@@ -202,10 +217,10 @@ var ArcGenerator = yeoman.generators.Base.extend({
                     }
                 };
                 if (this.options.nossl) {
-                    req = http.request(options, responseHandler.bind(this));
+                    req = http.request(options, gitLabResponseHandler.bind(this));
                 }
                 else {
-                    req = https.request(options, responseHandler.bind(this));
+                    req = https.request(options, gitLabResponseHandler.bind(this));
                 }
                 req.write(params);
                 req.end();
@@ -219,7 +234,7 @@ var ArcGenerator = yeoman.generators.Base.extend({
                 done();
             }
 
-            function responseHandler(res){
+            function gitLabResponseHandler(res){
                 res.setEncoding('utf8');
                 res.on('data', function(chunk) {
                     this.user.gitlab = JSON.parse(chunk);
@@ -247,12 +262,15 @@ var ArcGenerator = yeoman.generators.Base.extend({
 
     configuring: function () {
         var done = this.async();
+
+//        logger.log(this.username, this.user.bitbucket.display_name);
+//        logger.log(this.username, this.user.gitlab.name);
         this.url = {};
         if (this.options.github) {
-            this.url.repo = 'https://github.com/' + this.user.github.name + '/' + this.projectName + '.git';
-            this.url.bugs = 'https://github.com/' + this.user.github.name + '/' + this.projectName + '/issues';
-            this.url.home = 'http://github.com/' + this.user.github.name;
-            this.repository = 'git@github.com:' + this.user.github.name + '/' + this.projectName + '.git';
+            this.url.repo = 'https://github.com/' + this.user.github.user + '/' + this.projectName + '.git';
+            this.url.bugs = 'https://github.com/' + this.user.github.user + '/' + this.projectName + '/issues';
+            this.url.home = 'http://github.com/' + this.user.github.user;
+            this.repository = 'git@github.com:' + this.user.github.user + '/' + this.projectName + '.git';
         }
         else if (this.options.bitbucket) {
             this.url.repo = 'https://bitbucket.org/' + this.user.bitbucket.username + '/' + this.projectName + '.git';
@@ -282,7 +300,7 @@ var ArcGenerator = yeoman.generators.Base.extend({
                 hostname: 'api.github.com',
                 path: '/user/repos',
                 method: 'POST',
-                auth: this.user.github.name + ':' + this.properties.password,
+                auth: this.user.github.user + ':' + this.properties.password,
                 headers: {
                     'Accept': 'application/vnd.github.v3+json',
                     'User-Agent': 'Yeoman-Generator-Arc',
