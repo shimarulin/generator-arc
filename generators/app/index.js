@@ -172,7 +172,6 @@ var ArcGenerator = yeoman.generators.Base.extend({
                         this.user.github.user =  this._.strLeft(this.useremail, '@');
                     }
                     options.path += username;
-                    logger.log(options.path);
                     https
                         .get(options, function(res) {
                             res.on("data", function(chunk) {
@@ -205,8 +204,6 @@ var ArcGenerator = yeoman.generators.Base.extend({
                     'email': this.useremail,
                     'password': this.properties.password
                 });
-                logger.info(this.properties.repositoryUrl);
-                logger.info(params);
                 options = {
                     hostname: this.properties.repositoryUrl,
                     path: '/api/v3/session',
@@ -364,7 +361,6 @@ var ArcGenerator = yeoman.generators.Base.extend({
                 token: this.user.gitlab.private_token
             });
             gitlab.projects.create(params, function(data) {
-                logger.info(data);
                 done();
             });
         }
@@ -427,7 +423,9 @@ var ArcGenerator = yeoman.generators.Base.extend({
     end: function () {
         var yo = this;
         this.installDependencies();
-
+//        logger.log(this.user.github.name);
+//        logger.log(this.user.bitbucket.display_name);
+//        logger.log(this.user.gitlab.name);
         async.series([
                 function(callback){
                     exec('git init',
@@ -437,6 +435,44 @@ var ArcGenerator = yeoman.generators.Base.extend({
                             }
                             callback(null, '\"git init\" susses');
                         });
+                },
+                function(callback){
+                    var user;
+                    if (yo.options.github) {
+                        user = yo.user.github.name;
+                    }
+                    else if (yo.options.bitbucket) {
+                        user = yo.user.bitbucket.display_name;
+                    }
+                    else if (yo.options.gitlab) {
+                        user = yo.user.gitlab.name;
+                    }
+                    if (user !== undefined) {
+                        exec('git config user.name "'+user+'"',
+                            function (error, stdout, stderr) {
+                                if (error === null) {
+                                    yo.log('git config user.name:'.green, "susses".cyan);
+                                }
+                                callback(null, '\"git config user.name\" susses');
+                            });
+                    }
+                    else {
+                        callback(null, '\"git config user.name\" skipped');
+                    }
+                },
+                function(callback){
+                    if (typeof yo.options.email === 'string') {
+                        exec('git config user.email "'+yo.options.email+'"',
+                            function (error, stdout, stderr) {
+                                if (error === null) {
+                                    yo.log('git config user.email:'.green, "susses".cyan);
+                                }
+                                callback(null, '\"git config user.email\" susses');
+                            });
+                    }
+                    else {
+                        callback(null, '\"git config user.email\" skipped');
+                    }
                 },
                 function(callback){
                     exec('git add .',
@@ -451,14 +487,14 @@ var ArcGenerator = yeoman.generators.Base.extend({
                     exec('git commit -m \"Initial commit\"',
                         function (error, stdout, stderr) {
                             if (error === null) {
-                                console.log('git commit:'.green, yo._.trim(stdout));
+                                yo.log('git commit:'.green, yo._.trim(stdout));
                             }
                             callback(null, '\"git commit\" susses');
                         });
                 }
             ],
             function(err, results){
-//                    logger.info(results);
+                    logger.info(yo.remote);
                 if (yo.repository) {
                     addRemote(yo.repository);
                 }
@@ -469,11 +505,11 @@ var ArcGenerator = yeoman.generators.Base.extend({
             exec('git remote add origin ' + repo,
                 function (error, stdout, stderr) {
                     if (error === null && yo.remote) {
-                        console.log('git remote add:'.green, "susses".cyan);
+                        yo.log('git remote add:'.green, "susses".cyan);
                         push();
                     }
                     else if (error === null) {
-                        console.log('git remote add:'.green, "susses".cyan);
+                        yo.log('git remote add:'.green, "susses".cyan);
                     }
                 });
         }
@@ -481,7 +517,7 @@ var ArcGenerator = yeoman.generators.Base.extend({
             exec('git push --set-upstream origin master',
                 function (error, stdout, stderr) {
                     if (error === null) {
-                        console.log('git push:'.green, yo._.trim(stdout));
+                        yo.log('git push:'.green, yo._.trim(stdout));
                     }
                 });
         }
