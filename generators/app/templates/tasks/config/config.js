@@ -53,6 +53,18 @@ var directory = {
             path: "fonts/"
         }
     },
+    html = {
+        source: {
+            extensions: ["html"],
+            options: {
+                underscore: false,
+                recursive: false
+            }
+        },
+        destination: {
+            path: "/"
+        }
+    },
     lib = {
         fonts: {
             destination: {
