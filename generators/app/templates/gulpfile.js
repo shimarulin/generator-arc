@@ -9,6 +9,7 @@ var gulp = require('gulp')
     , config = require('./tasks/config/config')
     , requireTasks = [
         'html',
+        'images',
         'lib',
         'scripts',
         'server',
