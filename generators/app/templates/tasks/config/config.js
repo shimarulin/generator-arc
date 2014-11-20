@@ -85,7 +85,15 @@ var directory = {
         }
     },
     scripts = {
+        source: {
+            extensions: ["js"],
+            options: {
+                underscore: false,
+                recursive: true
+            }
+        },
         destination: {
+            name: 'app.js',
             path: 'js/'
         }
     },

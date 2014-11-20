@@ -12,7 +12,7 @@ var gulp = require('gulp')
     , flatten = require("gulp-flatten")
     ;
 
-gulp.task('script', function () {
+gulp.task('scripts', function () {
     return gulp.src(scripts.source.files)
         .pipe(flatten())
         .pipe(order([
@@ -24,7 +24,7 @@ gulp.task('script', function () {
         ]))
         .pipe(sourcemaps.init())
         .pipe(concat(scripts.destination.name))
-        .pipe(sourcemaps.write())
+        .pipe(sourcemaps.write('.'))
         .pipe(gulp.dest(scripts.destination.path))
         ;
 });
