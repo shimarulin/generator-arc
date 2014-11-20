@@ -260,8 +260,6 @@ var ArcGenerator = yeoman.generators.Base.extend({
     configuring: function () {
         var done = this.async();
 
-//        logger.log(this.username, this.user.bitbucket.display_name);
-//        logger.log(this.username, this.user.gitlab.name);
         this.url = {};
         if (this.options.github) {
             this.url.repo = 'https://github.com/' + this.user.github.user + '/' + this.projectName + '.git';
@@ -290,7 +288,7 @@ var ArcGenerator = yeoman.generators.Base.extend({
         var params, options, req;
         if (this.options.github && this.options.create) {
             params = JSON.stringify({
-                'name': this.projectName,
+                'name': this.readableName,
                 'has_wiki': false
             });
             options = {
@@ -308,6 +306,7 @@ var ArcGenerator = yeoman.generators.Base.extend({
                 res.setEncoding('utf8');
                 res.on('data', function(chunk) {
                     this.remote = true;
+                    this.repository = JSON.parse(chunk).ssh_url;
                     done();
                 }.bind(this));
             }.bind(this));
@@ -321,7 +320,7 @@ var ArcGenerator = yeoman.generators.Base.extend({
         }
         else if (this.options.bitbucket && this.options.create) {
             params = querystring.stringify({
-                'name' : this.projectName,
+                'name' : this.readableName,
                 'is_private': true,
                 'scm': 'git'
             });
@@ -352,7 +351,8 @@ var ArcGenerator = yeoman.generators.Base.extend({
         }
         else if (this.options.gitlab && this.options.create) {
             params = {
-                'name' : this.projectName,
+                'name' : this.readableName,
+                'path': this.projectName,
                 'wiki_enabled' : false,
                 'public': false
             };
@@ -423,9 +423,6 @@ var ArcGenerator = yeoman.generators.Base.extend({
     end: function () {
         var yo = this;
         this.installDependencies();
-//        logger.log(this.user.github.name);
-//        logger.log(this.user.bitbucket.display_name);
-//        logger.log(this.user.gitlab.name);
         async.series([
                 function(callback){
                     exec('git init',
@@ -494,7 +491,6 @@ var ArcGenerator = yeoman.generators.Base.extend({
                 }
             ],
             function(err, results){
-                    logger.info(yo.remote);
                 if (yo.repository) {
                     addRemote(yo.repository);
                 }
