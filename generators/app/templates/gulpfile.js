@@ -8,8 +8,10 @@ var gulp = require('gulp')
     , dir = requireDir('./tasks')
     , config = require('./tasks/config/config')
     , requireTasks = [
-        'lib',
         'html',
+        'lib',
+        'scripts',
+        'server',
         'styles'
     ]
     ;
@@ -18,6 +20,7 @@ gulp.task('default', requireTasks, function() {
     gulp.watch(config.html.watch, ['html']);
     gulp.watch(config.styles.watch, ['styles']);
     gulp.watch(config.scripts.watch, ['scripts']);
+    gulp.watch(config.images.watch, ['images']);
 });
 
 

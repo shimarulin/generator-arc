@@ -65,6 +65,18 @@ var directory = {
             path: "/"
         }
     },
+    images = {
+        source: {
+            extensions: ["png", "jpg", "gif", "svg"],
+            options: {
+                underscore: false,
+                recursive: true
+            }
+        },
+        destination: {
+            path: 'images/'
+        }
+    },
     lib = {
         fonts: {
             destination: {
@@ -140,6 +152,7 @@ var directory = {
 
 function Config() {
     this.fonts = new Task(fonts);
+    this.images = new Task(images);
     this.scripts = new Task(scripts);
     this.server = new Task(server);
     this.styles = new Task(styles);
