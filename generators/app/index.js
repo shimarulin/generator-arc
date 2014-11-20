@@ -107,6 +107,8 @@ var ArcGenerator = yeoman.generators.Base.extend({
             return nossl ? "http://" : "https://";
         }(this.options.nossl);
 
+        this.user.name = this.username;
+
     },
 
     prompting: function () {
@@ -177,6 +179,7 @@ var ArcGenerator = yeoman.generators.Base.extend({
                             res.on("data", function(chunk) {
                                 var name = JSON.parse(chunk).name;
                                 this.user.github.name = (name !== ('' || undefined)) ? name : this.username;
+                                this.user.name = this.user.github.name;
                                 done();
                             }.bind(this));
                         }.bind(this))
@@ -191,6 +194,7 @@ var ArcGenerator = yeoman.generators.Base.extend({
                     .get("https://bitbucket.org/api/1.0/users/" + this.useremail, function(res) {
                         res.on("data", function(chunk) {
                             this.user.bitbucket = JSON.parse(chunk).user;
+                            this.user.name = this.user.bitbucket.display_name;
                             done();
                         }.bind(this));
                     }.bind(this))
@@ -235,6 +239,7 @@ var ArcGenerator = yeoman.generators.Base.extend({
                 res.setEncoding('utf8');
                 res.on('data', function(chunk) {
                     this.user.gitlab = JSON.parse(chunk);
+                    this.user.name = this.user.gitlab.name;
                     this.remote = true;
                     done();
                 }.bind(this));
@@ -434,28 +439,13 @@ var ArcGenerator = yeoman.generators.Base.extend({
                         });
                 },
                 function(callback){
-                    var user;
-                    if (yo.options.github) {
-                        user = yo.user.github.name;
-                    }
-                    else if (yo.options.bitbucket) {
-                        user = yo.user.bitbucket.display_name;
-                    }
-                    else if (yo.options.gitlab) {
-                        user = yo.user.gitlab.name;
-                    }
-                    if (user !== undefined) {
-                        exec('git config user.name "'+user+'"',
-                            function (error, stdout, stderr) {
-                                if (error === null) {
-                                    yo.log('git config user.name:'.green, "susses".cyan);
-                                }
-                                callback(null, '\"git config user.name\" susses');
-                            });
-                    }
-                    else {
-                        callback(null, '\"git config user.name\" skipped');
-                    }
+                    exec('git config user.name "'+yo.user.name+'"',
+                        function (error, stdout, stderr) {
+                            if (error === null) {
+                                yo.log('git config user.name:'.green, "susses".cyan);
+                            }
+                            callback(null, '\"git config user.name\" susses');
+                        });
                 },
                 function(callback){
                     if (typeof yo.options.email === 'string') {

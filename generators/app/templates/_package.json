@@ -7,7 +7,7 @@
   "license": "MIT",
   "private": true,
   "author": {
-    "name" : "<%= username %>",
+    "name" : "<%= user.name %>",
     "email" : "<%= useremail %>",
     "url" : "<%= url.home %>"
   },
