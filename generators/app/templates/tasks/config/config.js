@@ -151,7 +151,7 @@ function Task (config) {
         underscore  = thereIs(config, "source.options.underscore", true);
 
     this.destination = {
-        name: thereIs(config, "destination.name", false) ? (directory.application + config.destination.name) : null,
+        name: thereIs(config, "destination.name", false) ? config.destination.name : null,
         path: thereIs(config, "destination.path", false) ? (directory.application + config.destination.path) : null
     };
 
