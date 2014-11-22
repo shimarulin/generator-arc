@@ -12,6 +12,7 @@
   - sfnt2woff:      http://people.mozilla.com/~jkew/woff/
   - ttfautohint:    http://www.freetype.org/ttfautohint/
   - woff2_compress: http://code.google.com/p/font-compression-reference/w/list
+  - batik-ttf2svg:  http://xmlgraphics.apache.org/batik/tools/font-converter.html
   
 ### Node.js
 
