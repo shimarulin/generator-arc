@@ -20,6 +20,13 @@ var cwd = process.cwd(),// current working directory
      * @property {object}           destination.path            - destination path
      */
     fonts = {
+        source: {
+            extensions: ["eot", "otf", "svg", "ttf", "woff"],
+            options: {
+                underscore: true,
+                recursive: true
+            }
+        },
         destination: {
             path: "fonts/"
         }
