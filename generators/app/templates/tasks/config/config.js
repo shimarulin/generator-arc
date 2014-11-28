@@ -25,7 +25,8 @@ var cwd = process.cwd(),// current working directory
             options: {
                 underscore: true,
                 recursive: true
-            }
+            },
+            root: directory.source + "fonts/"
         },
         destination: {
             path: "fonts/"
@@ -159,6 +160,7 @@ function Task (config) {
             absolute: cwd + '/' + config.source.root,
             relative: config.source.root
         };
+        this.source.files = _globs(recursive, underscore, this.source.root.relative);
         this.watch = _globs(true, true, config.source.root);
     }
     else {
@@ -166,6 +168,7 @@ function Task (config) {
             absolute: cwd + '/' + directory.source,
             relative: directory.source
         };
+        this.source.files = _globs(recursive, underscore);
         this.watch = _globs(true, true);
     }
 
