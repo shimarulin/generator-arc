@@ -378,7 +378,14 @@ var ArcGenerator = yeoman.generators.Base.extend({
     writing: {
         app: function () {
             this.mkdir('src/components');
+            this.mkdir('src/fonts');
+            this.mkdir('src/images');
             this.mkdir('src/modules');
+
+            this.copy('gitkeep', 'src/components/.gitkeep');
+            this.copy('gitkeep', 'src/fonts/.gitkeep');
+            this.copy('gitkeep', 'src/images/.gitkeep');
+            this.copy('gitkeep', 'src/modules/.gitkeep');
 
             this.template('src/_index.html', 'src/index.html');
             if (this.properties.preprocessor == 'less') {
