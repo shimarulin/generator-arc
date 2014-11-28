@@ -418,6 +418,7 @@ var ArcGenerator = yeoman.generators.Base.extend({
             this.mkdir('tasks/config');
             this.copy('gulpfile.js', 'gulpfile.js');
             this.template('tasks/config/config.js', 'tasks/config/config.js', undefined, templateSettings.js);
+            this.copy('tasks/config/filters.js', 'tasks/config/filters.js');
             this.copy('tasks/images.js', 'tasks/images.js');
             this.copy('tasks/libs.js', 'tasks/libs.js');
             this.copy('tasks/markup.js', 'tasks/markup.js');

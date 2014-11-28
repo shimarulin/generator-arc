@@ -1,36 +1,7 @@
 'use strict';
 
-var cwd = process.cwd()// current working directory
-    , filter = require('gulp-filter')
-    , minimatch = require('minimatch')
-    , filters = {
-        js: filter('**/*.js'),
-        css: filter('**/*.css'),
-        less: filter('**/*.less'),
-        scss: filter(['*.sass', '*.scss']),
-        fonts: filter(function (file) {
-            var conformity = false;
-            if (minimatch(file.path, '**/*.{eot,ttf,woff}')) {
-                conformity = true;
-            }
-            else if (minimatch(file.path, '**/*.svg') && file.contents.toString().indexOf("<glyph") !== -1) {
-                conformity = true;
-            }
-            return conformity;
-        }),
-        images: filter(function (file) {
-            var conformity = false;
-            if (minimatch(file.path, '**/*.{png,jpg,gif}')) {
-                conformity = true;
-            }
-            else if (minimatch(file.path, '**/*.svg') && file.contents.toString().indexOf("<glyph") === -1) {
-                conformity = true;
-            }
-            return conformity;
-        })
-    };
-
-var directory = {
+var cwd = process.cwd(),// current working directory
+    directory = {
         application: 'app/',
         build: 'build/',
         source: 'src/'
@@ -160,8 +131,6 @@ function Config() {
     this.lib.fonts = new Task(lib.fonts);
     this.lib.scripts = new Task(lib.scripts);
     this.lib.styles = new Task(lib.styles);
-
-    this.filters = filters;
 }
 
 module.exports = new Config();
