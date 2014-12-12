@@ -1,3 +1,15 @@
+## Runtime
+```js
+    ...
+    gulp.watch(config.html.watch, ['html']);
+    ...
+```
+
+```bash
+$ 'default' errored after 118 μs Cannot read property 'watch' of undefined
+```
+
+
 ## CSS
 2. Extend the sourcemap support for libraries
 
