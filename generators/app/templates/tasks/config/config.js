@@ -32,7 +32,7 @@ var cwd = process.cwd(),// current working directory
             path: "fonts/"
         }
     },
-    html = {
+    markup = {
         source: {
             extensions: ["html"],
             options: {
@@ -132,6 +132,7 @@ var cwd = process.cwd(),// current working directory
 function Config() {
     this.fonts = new Task(fonts);
     this.images = new Task(images);
+    this.markup = new Task(markup);
     this.scripts = new Task(scripts);
     this.server = new Task(server);
     this.styles = new Task(styles);

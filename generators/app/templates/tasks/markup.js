@@ -1,12 +1,12 @@
 var gulp = require('gulp')
 
-    , html = require('./config/config').html
+    , markup = require('./config/config').html
     ;
 
-gulp.task('html', [], function () {
+gulp.task('markup', [], function () {
 
-    return gulp.src(html.source.files)
-        .pipe(gulp.dest(html.destination.path))
+    return gulp.src(markup.source.files)
+        .pipe(gulp.dest(markup.destination.path))
         ;
 
 });
