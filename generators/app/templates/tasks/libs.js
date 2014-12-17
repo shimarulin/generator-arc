@@ -34,13 +34,13 @@ gulp.task('lib.styles', [], function () {
             function(str, $1, $2, $3, $4, $5, $6, $7){
                 var replace = '';
                 if ($3 === undefined && $4 === undefined && $6 === undefined) {
-                    replace = $1 + '../' + fonts.path + $2 + $5 + $7
+                    replace = $1 + '../' + fonts.destination.origin + $2 + $5 + $7
                 }
                 else if (typeof $3 == 'string' && typeof $4 == 'string' && $6 === undefined) {
-                    replace = $1 + '../' + fonts.path + $5 + $7
+                    replace = $1 + '../' + fonts.destination.origin + $5 + $7
                 }
                 else if (typeof $3 == 'string' && typeof $4 == 'string' && typeof $6 === 'string') {
-                    replace = $1 + '../' + fonts.path + $5 + $6 + $7
+                    replace = $1 + '../' + fonts.destination.origin + $5 + $6 + $7
                 }
                 return replace
             }))

@@ -151,7 +151,8 @@ function Task (config) {
 
     this.destination = {
         name: thereIs(config, "destination.name", false) ? config.destination.name : null,
-        path: thereIs(config, "destination.path", false) ? (directory.application + config.destination.path) : null
+        path: thereIs(config, "destination.path", false) ? (directory.application + config.destination.path) : null,
+        origin: thereIs(config, "destination.path", false) ? (config.destination.path) : null
     };
 
     this.source = {};
