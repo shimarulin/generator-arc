@@ -1,6 +1,6 @@
 var gulp = require('gulp')
 
-    , markup = require('./config/config').html
+    , markup = require('./config/config').markup
     ;
 
 gulp.task('markup', [], function () {
